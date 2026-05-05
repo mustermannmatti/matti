@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      String   @default("consumer")
+  createdAt DateTime @default(now())
+
+  receipts Receipt[] @relation("ConsumerReceipts")
+  store    Store?
+}
+
+model Store {
+  id      String  @id @default(cuid())
+  name    String
+  address String
+  logo    String?
+  userId  String  @unique
+  user    User    @relation(fields: [userId], references: [id])
+
+  receipts Receipt[]
+}
+
+model Receipt {
+  id         String    @id @default(cuid())
+  token      String    @unique @default(cuid())
+  storeId    String
+  store      Store     @relation(fields: [storeId], references: [id])
+  consumerId String?
+  consumer   User?     @relation("ConsumerReceipts", fields: [consumerId], references: [id])
+  total      Float
+  tax        Float
+  subtotal   Float
+  category   String    @default("Sonstiges")
+  status     String    @default("pending")
+  createdAt  DateTime  @default(now())
+  claimedAt  DateTime?
+
+  items ReceiptItem[]
+}
+
+model ReceiptItem {
+  id        String  @id @default(cuid())
+  receiptId String
+  receipt   Receipt @relation(fields: [receiptId], references: [id])
+  name      String
+  quantity  Float
+  price     Float
+  total     Float
+}
