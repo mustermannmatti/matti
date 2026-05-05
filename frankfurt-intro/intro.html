@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eschborn–Frankfurt 2026 — Intro</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #000;
+    color: #fff;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  #stage {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    background: #000;
+  }
+
+  .scene {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease;
+  }
+  .scene.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* ─── SZENE 1: MAP HOOK ─── */
+  #scene-hook {
+    background: #0a0a0a;
+    flex-direction: column;
+  }
+
+  #map-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #map-svg {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0; left: 0;
+  }
+
+  .map-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: gridZoom 8s ease-in forwards;
+  }
+
+  @keyframes gridZoom {
+    0%   { background-size: 120px 120px; opacity: 0.3; }
+    100% { background-size: 40px 40px;  opacity: 0.07; }
+  }
+
+  .map-road {
+    position: absolute;
+    background: rgba(255,220,80,0.25);
+    border-radius: 2px;
+  }
+
+  /* Frankfurt silhouette roads */
+  .road-h { height: 2px; }
+  .road-v { width: 2px; }
+
+  .map-pin {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #e63946;
+    box-shadow: 0 0 0 4px rgba(230,57,70,0.3), 0 0 20px rgba(230,57,70,0.6);
+    transform: translate(-50%, -50%) scale(0);
+    animation: pinDrop 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  }
+
+  @keyframes pinDrop {
+    to { transform: translate(-50%, -50%) scale(1); }
+  }
+
+  .city-label {
+    position: absolute;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    white-space: nowrap;
+    transform: translate(-50%, -200%);
+  }
+
+  .route-line {
+    position: absolute;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #e63946, transparent);
+    transform-origin: left center;
+    transform: scaleX(0);
+    animation: drawLine 2s ease forwards;
+  }
+
+  @keyframes drawLine {
+    to { transform: scaleX(1); }
+  }
+
+  .voiceover {
+    position: absolute;
+    bottom: 12%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: clamp(16px, 2.5vw, 28px);
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    text-align: center;
+    color: #fff;
+    opacity: 0;
+    white-space: nowrap;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.9);
+  }
+
+  .vo-fade-in  { animation: voIn  0.6s ease forwards; }
+  .vo-fade-out { animation: voOut 0.4s ease forwards; }
+
+  @keyframes voIn  { to { opacity: 1; } }
+  @keyframes voOut { from { opacity: 1; } to { opacity: 0; } }
+
+  /* ─── SZENE 2: MONTAGE ─── */
+  #scene-montage {
+    flex-direction: column;
+    background: #000;
+  }
+
+  .montage-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 3px;
+    width: 100%;
+    height: 100%;
+  }
+
+  .montage-cell {
+    position: relative;
+    overflow: hidden;
+    background: #111;
+  }
+
+  .montage-cell:first-child {
+    grid-column: 1 / 3;
+  }
+
+  .cell-bg {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    filter: grayscale(0.3);
+    transition: transform 0.8s ease;
+  }
+
+  .montage-cell:hover .cell-bg { transform: scale(1.05); }
+
+  .cell-label {
+    position: absolute;
+    bottom: 12px;
+    left: 14px;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.7);
+    font-weight: 500;
+  }
+
+  .cell-flash {
+    position: absolute;
+    inset: 0;
+    background: #fff;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* ─── SZENE 3: MAPS-SEQUENZ ─── */
+  #scene-maps {
+    background: #0d1117;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .maps-frame {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .maps-bg {
+    position: absolute;
+    inset: 0;
+    background: #1a2332;
+    transition: background 1.2s ease;
+  }
+
+  /* Topographic lines */
+  .topo-lines {
+    position: absolute;
+    inset: 0;
+    opacity: 0.12;
+    background-image:
+      repeating-linear-gradient(
+        30deg,
+        transparent,
+        transparent 18px,
+        rgba(100,200,100,0.5) 18px,
+        rgba(100,200,100,0.5) 20px
+      );
+    animation: topoScroll 8s linear infinite;
+  }
+
+  @keyframes topoScroll {
+    from { background-position: 0 0; }
+    to   { background-position: 100px 60px; }
+  }
+
+  .location-card {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+  .location-card.active { opacity: 1; }
+
+  .loc-pin-emoji {
+    font-size: clamp(40px, 6vw, 70px);
+    margin-bottom: 16px;
+    filter: drop-shadow(0 4px 20px rgba(230,57,70,0.6));
+    animation: pinBounce 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  }
+
+  @keyframes pinBounce {
+    from { transform: translateY(-30px) scale(0.5); opacity: 0; }
+    to   { transform: translateY(0)     scale(1);   opacity: 1; }
+  }
+
+  .loc-name {
+    font-size: clamp(22px, 4vw, 48px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  .loc-sub {
+    font-size: clamp(11px, 1.5vw, 16px);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 32px;
+  }
+
+  .loc-vo {
+    font-size: clamp(18px, 2.8vw, 34px);
+    font-weight: 300;
+    letter-spacing: 0.02em;
+    text-align: center;
+    max-width: 700px;
+    line-height: 1.4;
+    color: rgba(255,255,255,0.9);
+    padding: 0 20px;
+    border-left: 3px solid #e63946;
+    padding-left: 24px;
+    text-align: left;
+  }
+
+  .loc-tag {
+    position: absolute;
+    top: 28px;
+    right: 28px;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 6px 14px;
+    border-radius: 2px;
+  }
+
+  .progress-dots {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+  }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    transition: background 0.3s, transform 0.3s;
+  }
+
+  .dot.active {
+    background: #e63946;
+    transform: scale(1.4);
+  }
+
+  /* ─── SZENE 4: CREATOR ─── */
+  #scene-creator {
+    background: #080c0f;
+    flex-direction: column;
+    gap: 0;
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding: 0;
+  }
+
+  .creator-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #0a1520 0%, #050810 60%, #0d0005 100%);
+    overflow: hidden;
+  }
+
+  /* Fake street/crowd bokeh */
+  .bokeh-dot {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,200,80,0.15);
+    filter: blur(8px);
+    animation: bokehFloat linear infinite;
+  }
+
+  @keyframes bokehFloat {
+    from { transform: translateY(0) scale(1); opacity: 0.1; }
+    50%  { opacity: 0.3; }
+    to   { transform: translateY(-80px) scale(1.3); opacity: 0; }
+  }
+
+  .creator-content {
+    position: relative;
+    z-index: 2;
+    padding: clamp(32px, 5vw, 70px);
+    max-width: 780px;
+  }
+
+  .creator-label {
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: #e63946;
+    margin-bottom: 20px;
+    opacity: 0;
+    animation: slideUp 0.6s ease 0.2s forwards;
+  }
+
+  .creator-text {
+    font-size: clamp(20px, 3.2vw, 40px);
+    font-weight: 300;
+    line-height: 1.55;
+    color: rgba(255,255,255,0.9);
+  }
+
+  .creator-line {
+    display: block;
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  @keyframes slideUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .highlight {
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .red { color: #e63946; }
+
+  .creator-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #e63946;
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: barGrow 20s linear forwards;
+  }
+
+  @keyframes barGrow { to { transform: scaleX(1); } }
+
+  /* ─── SZENE 5: TITLE CARD ─── */
+  #scene-title {
+    background: #000;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .title-main {
+    font-size: clamp(36px, 8vw, 100px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    text-align: center;
+    opacity: 0;
+    animation: titleFade 1.2s ease 0.3s forwards;
+    line-height: 0.95;
+  }
+
+  .title-dash {
+    display: block;
+    color: #e63946;
+    font-weight: 300;
+    font-size: 0.55em;
+    letter-spacing: 0.08em;
+    margin: 8px 0;
+    text-align: center;
+    opacity: 0;
+    animation: titleFade 0.8s ease 0.9s forwards;
+  }
+
+  .title-year {
+    display: block;
+    font-size: clamp(48px, 10vw, 130px);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    text-align: center;
+    opacity: 0;
+    animation: titleFade 1s ease 1.2s forwards;
+  }
+
+  @keyframes titleFade {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .title-sub {
+    font-size: clamp(10px, 1.3vw, 15px);
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    text-align: center;
+    opacity: 0;
+    animation: titleFade 0.8s ease 1.8s forwards;
+    margin-top: 28px;
+  }
+
+  /* ─── UI CONTROLS ─── */
+  #controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(255,255,255,0.1);
+    z-index: 100;
+  }
+
+  #progress-bar {
+    height: 100%;
+    background: #e63946;
+    width: 0%;
+    transition: width 0.1s linear;
+  }
+
+  #play-btn {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 200;
+    background: rgba(230,57,70,0.9);
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    font-family: inherit;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 18px 44px;
+    cursor: pointer;
+    border-radius: 2px;
+    backdrop-filter: blur(10px);
+    transition: background 0.2s, transform 0.2s;
+  }
+
+  #play-btn:hover {
+    background: #e63946;
+    transform: translate(-50%, -50%) scale(1.04);
+  }
+
+  #scene-label {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.25);
+    z-index: 100;
+  }
+
+  #skip-btn {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.25);
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 100;
+    font-family: inherit;
+    padding: 8px;
+  }
+  #skip-btn:hover { color: rgba(255,255,255,0.6); }
+
+  /* ─── MAP SCENE VISUALS ─── */
+  .map-area {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.08;
+  }
+  .map-area.park   { background: #4caf50; }
+  .map-area.water  { background: #2196f3; }
+  .map-area.urban  { background: #9e9e9e; }
+
+  /* ─── FLASH CUT ─── */
+  #flash {
+    position: fixed;
+    inset: 0;
+    background: #fff;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 999;
+  }
+</style>
+</head>
+<body>
+
+<div id="flash"></div>
+<div id="controls"><div id="progress-bar"></div></div>
+<div id="scene-label">ESCHBORN–FRANKFURT 2026</div>
+<button id="skip-btn">Skip ›</button>
+
+<div id="stage">
+
+  <!-- PLAY BUTTON -->
+  <button id="play-btn">▶ INTRO ABSPIELEN</button>
+
+  <!-- SZENE 1: PRE-INTRO HOOK -->
+  <div class="scene" id="scene-hook">
+    <div id="map-container">
+      <!-- Grid overlay -->
+      <div class="map-grid"></div>
+
+      <!-- Map area blobs -->
+      <div class="map-area park"  style="width:200px;height:200px;top:30%;left:55%;"></div>
+      <div class="map-area water" style="width:80px;height:300px;top:20%;left:10%;border-radius:8px;"></div>
+      <div class="map-area urban" style="width:300px;height:150px;top:55%;left:35%;border-radius:8px;"></div>
+
+      <!-- Road overlays -->
+      <div class="map-road road-h" style="top:45%;left:0;width:100%;opacity:0.3;"></div>
+      <div class="map-road road-h" style="top:55%;left:15%;width:70%;opacity:0.15;"></div>
+      <div class="map-road road-v" style="left:50%;top:0;height:100%;opacity:0.2;"></div>
+      <div class="map-road road-v" style="left:35%;top:10%;height:80%;opacity:0.1;"></div>
+
+      <!-- City pins -->
+      <div class="map-pin" id="pin-ffm" style="top:50%;left:52%;animation-delay:1s;"></div>
+      <div class="city-label" style="top:50%;left:52%;">Frankfurt</div>
+
+      <!-- Voiceover text -->
+      <div class="voiceover" id="vo-hook"></div>
+    </div>
+  </div>
+
+  <!-- SZENE 1b: MONTAGE CUTS -->
+  <div class="scene" id="scene-montage">
+    <div class="montage-grid">
+      <div class="montage-cell" style="background:linear-gradient(135deg,#1a2a1a,#0d1a0d);">
+        <div class="cell-bg">🏔️</div>
+        <div class="cell-label">Feldberg · 879m</div>
+        <div class="cell-flash"></div>
+      </div>
+      <div class="montage-cell" style="background:linear-gradient(135deg,#1a1a0d,#0d0d05);">
+        <div class="cell-bg">🚴</div>
+        <div class="cell-label">Peloton</div>
+        <div class="cell-flash"></div>
+      </div>
+      <div class="montage-cell" style="background:linear-gradient(135deg,#0d0d1a,#05050d);">
+        <div class="cell-bg">🏛️</div>
+        <div class="cell-label">Alte Oper · Ziel</div>
+        <div class="cell-flash"></div>
+      </div>
+      <div class="montage-cell" style="background:linear-gradient(135deg,#1a0d0d,#0d0505);">
+        <div class="cell-bg">📍</div>
+        <div class="cell-label">Start · Eschborn</div>
+        <div class="cell-flash"></div>
+      </div>
+      <div class="montage-cell" style="background:linear-gradient(135deg,#1a1010,#0a0808);">
+        <div class="cell-bg">🎽</div>
+        <div class="cell-label">Tom Pidcock · GBR</div>
+        <div class="cell-flash"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SZENE 2: MAPS-SEQUENZ -->
+  <div class="scene" id="scene-maps">
+    <div class="maps-frame">
+      <div class="maps-bg" id="maps-bg"></div>
+      <div class="topo-lines"></div>
+
+      <!-- Location Cards -->
+      <div class="location-card" id="loc-0">
+        <div class="loc-tag">📍 Start</div>
+        <div class="loc-pin-emoji">📍</div>
+        <div class="loc-name">Eschborn</div>
+        <div class="loc-sub">Start · 11:45 Uhr · Industriegebiet</div>
+        <div class="loc-vo">„Hier fängt es an.<br>Unscheinbar. Noch ruhig."</div>
+      </div>
+
+      <div class="location-card" id="loc-1">
+        <div class="loc-tag">⛰️ Gipfel · 879m</div>
+        <div class="loc-pin-emoji">⛰️</div>
+        <div class="loc-name">Feldberg</div>
+        <div class="loc-sub">Taunus · Zweimal bestiegen · Südwestseite</div>
+        <div class="loc-vo">„Zweimal müssen sie hier rauf.<br>Südwestseite. Die härtere."</div>
+      </div>
+
+      <div class="location-card" id="loc-2">
+        <div class="loc-tag">💀 Herzstück</div>
+        <div class="loc-pin-emoji">🌲</div>
+        <div class="loc-name">Mammolshainer Stich</div>
+        <div class="loc-sub">Enger Waldanstieg · Kein Entkommen</div>
+        <div class="loc-vo">„Das ist das Herzstück.<br>Hier bricht das Rennen auseinander."</div>
+      </div>
+
+      <div class="location-card" id="loc-3">
+        <div class="loc-tag">🆕 NEU 2026</div>
+        <div class="loc-pin-emoji">🛤️</div>
+        <div class="loc-name">Burgweg</div>
+        <div class="loc-sub">Dreimal im Programm · Neu 2026</div>
+        <div class="loc-vo">„Dreimal. Neu dieses Jahr.<br>Kennt kaum jemand. Noch."</div>
+      </div>
+
+      <div class="location-card" id="loc-4">
+        <div class="loc-tag">🏁 Ziel · ~17:00 Uhr</div>
+        <div class="loc-pin-emoji">🏛️</div>
+        <div class="loc-name">Alte Oper Frankfurt</div>
+        <div class="loc-sub">Ziel · 211 km · 3.300 Hm</div>
+        <div class="loc-vo">„Und hier. Hier endet es.<br>Vor Tausenden."</div>
+      </div>
+
+      <!-- Progress dots -->
+      <div class="progress-dots">
+        <div class="dot active" id="dot-0"></div>
+        <div class="dot" id="dot-1"></div>
+        <div class="dot" id="dot-2"></div>
+        <div class="dot" id="dot-3"></div>
+        <div class="dot" id="dot-4"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SZENE 3: CREATOR ANSPRACHE -->
+  <div class="scene" id="scene-creator">
+    <div class="creator-bg" id="creator-bg"></div>
+    <div class="creator-content">
+      <div class="creator-label">📍 Frankfurt · Alte Oper</div>
+      <div class="creator-text" id="creator-text"></div>
+    </div>
+    <div class="creator-bar"></div>
+  </div>
+
+  <!-- SZENE 4: TITLE CARD -->
+  <div class="scene" id="scene-title">
+    <div>
+      <div class="title-main" id="title-main">
+        ESCHBORN
+        <span class="title-dash">—</span>
+        <span class="title-year">FRANKFURT</span>
+      </div>
+      <div class="title-sub">1. Mai 2026 · WorldTour · 211 km</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─── TIMELINE DEFINITION ───────────────────────────────────────────────
+// Each entry: { time (ms), fn }
+
+const scenes = {
+  hook:     document.getElementById('scene-hook'),
+  montage:  document.getElementById('scene-montage'),
+  maps:     document.getElementById('scene-maps'),
+  creator:  document.getElementById('scene-creator'),
+  title:    document.getElementById('scene-title'),
+};
+
+const flash = document.getElementById('flash');
+const progressBar = document.getElementById('progress-bar');
+const TOTAL_DURATION = 50000; // 50 seconds
+
+let startTime = null;
+let running = false;
+let rafId = null;
+
+// ─── UTILITY ───────────────────────────────────────────────────────────
+function showScene(key) {
+  Object.entries(scenes).forEach(([k, el]) => {
+    el.classList.toggle('active', k === key);
+  });
+}
+
+function vo(elId, text, delay = 0) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  setTimeout(() => {
+    el.textContent = text;
+    el.classList.remove('vo-fade-out');
+    el.classList.add('vo-fade-in');
+  }, delay);
+}
+
+function clearVo(elId, delay = 0) {
+  setTimeout(() => {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    el.classList.remove('vo-fade-in');
+    el.classList.add('vo-fade-out');
+  }, delay);
+}
+
+function flashScreen(duration = 80) {
+  flash.style.transition = 'none';
+  flash.style.opacity = '0.9';
+  setTimeout(() => {
+    flash.style.transition = `opacity ${duration}ms ease`;
+    flash.style.opacity = '0';
+  }, 30);
+}
+
+function showLocation(index) {
+  for (let i = 0; i < 5; i++) {
+    const card = document.getElementById(`loc-${i}`);
+    const dot  = document.getElementById(`dot-${i}`);
+    card.classList.toggle('active', i === index);
+    dot.classList.toggle('active', i === index);
+    if (i === index) {
+      // Re-trigger pin bounce by cloning
+      const pin = card.querySelector('.loc-pin-emoji');
+      const clone = pin.cloneNode(true);
+      pin.parentNode.replaceChild(clone, pin);
+    }
+  }
+
+  // BG color shift per location
+  const bg = document.getElementById('maps-bg');
+  const colors = ['#1a2030','#0f1c0f','#1c1208','#14080a','#0d1825'];
+  bg.style.background = colors[index] || '#0d1117';
+}
+
+function addCreatorLine(text, delay, isHighlight = false, isRed = false) {
+  setTimeout(() => {
+    const container = document.getElementById('creator-text');
+    const span = document.createElement('span');
+    span.className = 'creator-line' + (isHighlight ? ' highlight' : '') + (isRed ? ' red' : '');
+    span.textContent = text;
+    container.appendChild(span);
+    // Animate in
+    requestAnimationFrame(() => {
+      span.style.animation = `slideUp 0.5s ease forwards`;
+    });
+  }, delay);
+}
+
+// Bokeh dots for creator scene
+function spawnBokeh() {
+  const bg = document.getElementById('creator-bg');
+  for (let i = 0; i < 18; i++) {
+    const d = document.createElement('div');
+    d.className = 'bokeh-dot';
+    const size = Math.random() * 60 + 20;
+    d.style.width  = size + 'px';
+    d.style.height = size + 'px';
+    d.style.left   = Math.random() * 100 + '%';
+    d.style.top    = (60 + Math.random() * 40) + '%';
+    d.style.animationDuration = (4 + Math.random() * 6) + 's';
+    d.style.animationDelay    = (Math.random() * 4) + 's';
+    bg.appendChild(d);
+  }
+}
+
+// ─── TIMELINE ──────────────────────────────────────────────────────────
+const timeline = [
+  // HOOK (0:00–0:08)
+  { t:    0, fn: () => {
+      showScene('hook');
+  }},
+  { t: 1200, fn: () => {
+      vo('vo-hook', '„Einmal im Jahr verwandelt sich diese Stadt in eine Arena."');
+  }},
+  { t: 5500, fn: () => clearVo('vo-hook') },
+
+  // MONTAGE (0:08–0:17) — schnelle Schnitte
+  { t: 7500, fn: () => {
+      showScene('montage');
+      flashScreen();
+  }},
+  { t: 8200, fn: flashScreen },
+  { t: 9000, fn: flashScreen },
+  { t: 9600, fn: flashScreen },
+  { t:10200, fn: flashScreen },
+
+  // MAPS-SEQUENZ (0:17–0:35)
+  { t:11000, fn: () => {
+      showScene('maps');
+      showLocation(0);
+      flashScreen();
+  }},
+  { t:13800, fn: () => {
+      showLocation(1);
+      flashScreen();
+  }},
+  { t:16600, fn: () => {
+      showLocation(2);
+      flashScreen();
+  }},
+  { t:19400, fn: () => {
+      showLocation(3);
+      flashScreen();
+  }},
+  { t:22200, fn: () => {
+      showLocation(4);
+      flashScreen();
+  }},
+
+  // CREATOR ANSPRACHE (0:35–0:45)
+  { t:25500, fn: () => {
+      showScene('creator');
+      spawnBokeh();
+      flashScreen(200);
+      document.getElementById('creator-text').innerHTML = '';
+  }},
+  { t:26200, fn: () => addCreatorLine('Okay, ich erklär euch kurz was heute hier passiert —', 0) },
+  { t:27800, fn: () => addCreatorLine('weil es eigentlich ziemlich absurd ist.', 0) },
+  { t:30000, fn: () => addCreatorLine('', 0) }, // spacer
+  { t:30200, fn: () => addCreatorLine('211 Kilometer. Über 3.300 Höhenmeter.', 0) },
+  { t:32000, fn: () => addCreatorLine('Und das alles — an einem einzigen Tag.', 0) },
+  { t:34500, fn: () => addCreatorLine('') },
+  { t:34700, fn: () => addCreatorLine('Tom Pidcock — Topfavorit. Die Weltelite ist heute hier.', 0, true) },
+  { t:37500, fn: () => addCreatorLine('Aber auch 12.000 Amateure. Dieselben Berge.', 0, false, true) },
+  { t:40000, fn: () => addCreatorLine('') },
+  { t:40200, fn: () => addCreatorLine('Ich hab mir den ganzen Tag angeschaut.', 0) },
+  { t:42000, fn: () => addCreatorLine('Kommt mit.', 0, true) },
+
+  // TITLE CARD (0:45–0:50)
+  { t:44500, fn: () => {
+      showScene('title');
+      flashScreen(400);
+  }},
+];
+
+// ─── PLAYBACK ENGINE ───────────────────────────────────────────────────
+let firedUntil = 0;
+
+function tick(now) {
+  if (!running) return;
+  const elapsed = now - startTime;
+
+  // Fire timeline events
+  for (let i = firedUntil; i < timeline.length; i++) {
+    if (timeline[i].t <= elapsed) {
+      timeline[i].fn();
+      firedUntil = i + 1;
+    } else {
+      break;
+    }
+  }
+
+  // Progress bar
+  const pct = Math.min(100, (elapsed / TOTAL_DURATION) * 100);
+  progressBar.style.width = pct + '%';
+
+  if (elapsed < TOTAL_DURATION) {
+    rafId = requestAnimationFrame(tick);
+  } else {
+    running = false;
+    document.getElementById('skip-btn').textContent = '↺ Nochmal';
+  }
+}
+
+function startIntro() {
+  document.getElementById('play-btn').style.display = 'none';
+  document.getElementById('creator-text').innerHTML = '';
+  firedUntil = 0;
+  running = true;
+  startTime = performance.now();
+  rafId = requestAnimationFrame(tick);
+}
+
+function resetIntro() {
+  running = false;
+  if (rafId) cancelAnimationFrame(rafId);
+  Object.values(scenes).forEach(s => s.classList.remove('active'));
+  document.getElementById('creator-text').innerHTML = '';
+  progressBar.style.width = '0%';
+  document.getElementById('creator-bg').innerHTML = '';
+  document.getElementById('play-btn').style.display = '';
+  document.getElementById('skip-btn').textContent = 'Skip ›';
+  const voEl = document.getElementById('vo-hook');
+  if (voEl) { voEl.textContent = ''; voEl.className = 'voiceover'; }
+}
+
+document.getElementById('play-btn').addEventListener('click', startIntro);
+
+document.getElementById('skip-btn').addEventListener('click', () => {
+  if (!running && firedUntil > 0) {
+    resetIntro();
+  } else if (running) {
+    // Skip to next major scene
+    const elapsed = performance.now() - startTime;
+    const scenes_t = [0, 7500, 11000, 25500, 44500];
+    const next = scenes_t.find(t => t > elapsed + 500);
+    if (next) {
+      startTime = performance.now() - next;
+    }
+  }
+});
+
+// Keyboard: Space = play/pause, R = reset
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    if (!running && firedUntil === 0) startIntro();
+    else if (!running) resetIntro();
+  }
+  if (e.code === 'KeyR') resetIntro();
+});
+</script>
+</body>
+</html>
