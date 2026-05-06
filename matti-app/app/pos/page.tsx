@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import QRCode from "react-qr-code";
+import { signOut, useSession } from "next-auth/react";
 import { formatCurrency } from "@/lib/utils";
 
 type Store = { id: string; name: string; address: string };
@@ -27,6 +28,7 @@ const QUICK_ITEMS = [
 ];
 
 export default function POSPage() {
+  const { data: session } = useSession();
   const [stores, setStores] = useState<Store[]>([]);
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
   const [items, setItems] = useState<Item[]>([]);
@@ -45,10 +47,15 @@ export default function POSPage() {
       const res = await fetch("/api/stores");
       const data = await res.json();
       setStores(data);
-      if (data.length > 0) setSelectedStore(data[0]);
+      if (data.length > 0) {
+        const myStore = session?.user?.id
+          ? data.find((s: Store & { userId?: string }) => s.userId === session.user?.id)
+          : null;
+        setSelectedStore(myStore ?? data[0]);
+      }
     }
     load();
-  }, []);
+  }, [session]);
 
   function addItem() {
     const price = parseFloat(newItem.price);
@@ -124,12 +131,29 @@ export default function POSPage() {
             <span className="text-gray-400">|</span>
             <span className="font-semibold">Händler-Terminal</span>
           </div>
-          <Link
-            href="/dashboard"
-            className="text-sm text-gray-400 hover:text-white"
-          >
-            Kunden-App →
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/dashboard" className="text-sm text-gray-400 hover:text-white">
+              Kunden-App →
+            </Link>
+            {session?.user && (
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 text-sm text-gray-300">
+                  <div className="w-7 h-7 bg-blue-700 rounded-full flex items-center justify-center">
+                    <span className="text-xs font-semibold">
+                      {session.user.name?.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <span className="hidden sm:inline">{session.user.name}</span>
+                </div>
+                <button
+                  onClick={() => signOut({ callbackUrl: "/login" })}
+                  className="text-sm text-gray-400 hover:text-red-400 transition-colors"
+                >
+                  Abmelden
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
