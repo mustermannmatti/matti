@@ -32,37 +32,43 @@ export function formatDateShort(dateStr: string): string {
 
 const CATEGORIES: Record<
   string,
-  { icon: string; bg: string; badge: string }
+  { icon: string; bg: string; badge: string; bar: string }
 > = {
   Lebensmittel: {
     icon: "🛒",
     bg: "bg-green-100",
     badge: "bg-green-100 text-green-700",
+    bar: "bg-green-400",
   },
   Drogerie: {
     icon: "🧴",
     bg: "bg-pink-100",
     badge: "bg-pink-100 text-pink-700",
+    bar: "bg-pink-400",
   },
   Technik: {
     icon: "💻",
     bg: "bg-blue-100",
     badge: "bg-blue-100 text-blue-700",
+    bar: "bg-blue-400",
   },
   Restaurant: {
     icon: "🍽️",
     bg: "bg-orange-100",
     badge: "bg-orange-100 text-orange-700",
+    bar: "bg-orange-400",
   },
   Kleidung: {
     icon: "👕",
     bg: "bg-purple-100",
     badge: "bg-purple-100 text-purple-700",
+    bar: "bg-purple-400",
   },
   Sonstiges: {
     icon: "📦",
     bg: "bg-gray-100",
     badge: "bg-gray-100 text-gray-700",
+    bar: "bg-gray-400",
   },
 };
 
@@ -72,6 +78,7 @@ export function categoryColor(category: string) {
       icon: "📦",
       bg: "bg-gray-100",
       badge: "bg-gray-100 text-gray-700",
+      bar: "bg-gray-400",
     }
   );
 }

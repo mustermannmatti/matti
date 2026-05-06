@@ -33,25 +33,57 @@ export default function ReceiptPage({
   const { id } = use(params);
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/receipts/${id}`)
-      .then((r) => r.json())
-      .then((data) => {
-        setReceipt(data);
+    async function load() {
+      try {
+        const res = await fetch(`/api/receipts/${id}`);
+        if (!res.ok) { setNotFound(true); return; }
+        const data = await res.json();
+        if (data && typeof data === "object" && "error" in data) {
+          setNotFound(true);
+        } else {
+          setReceipt(data);
+        }
+      } catch {
+        setNotFound(true);
+      } finally {
         setLoading(false);
-      });
+      }
+    }
+    load();
   }, [id]);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-gray-50">
+        <div className="h-[53px] bg-white border-b border-gray-200" />
+        <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-start gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-gray-200 animate-pulse flex-shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="h-5 w-40 bg-gray-200 rounded animate-pulse" />
+                <div className="h-3 w-32 bg-gray-200 rounded animate-pulse" />
+                <div className="h-3 w-28 bg-gray-200 rounded animate-pulse" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="flex justify-between">
+                <div className="h-3 w-32 bg-gray-200 rounded animate-pulse" />
+                <div className="h-3 w-16 bg-gray-200 rounded animate-pulse" />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
-  if (!receipt || "error" in (receipt as object)) {
+  if (notFound || !receipt) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
