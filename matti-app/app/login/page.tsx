@@ -46,7 +46,7 @@ function LoginForm() {
             <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
               <span className="text-white font-bold">M</span>
             </div>
-            <span className="font-bold text-2xl text-gray-900">Matti</span>
+            <span className="font-bold text-2xl text-gray-900">Tappr</span>
           </Link>
           <p className="text-gray-500 mt-2 text-sm">Händler-Login</p>
         </div>

@@ -131,7 +131,7 @@ export default function DashboardPage() {
             <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-xs">M</span>
             </div>
-            <span className="font-bold text-lg">Matti</span>
+            <span className="font-bold text-lg">Tappr</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link
