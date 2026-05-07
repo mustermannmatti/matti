@@ -90,9 +90,16 @@ export default function AdminPage() {
   const [merchants, setMerchants] = useState<MerchantStat[]>([]);
   const [receipts, setReceipts] = useState<AdminReceipt[]>([]);
   const [expandedReceipt, setExpandedReceipt] = useState<string | null>(null);
-  const [tab, setTab] = useState<"overview" | "merchants" | "users" | "receipts">("overview");
+  const [tab, setTab] = useState<"overview" | "merchants" | "users" | "receipts" | "payments">("overview");
 
   const [receiptSearch, setReceiptSearch] = useState("");
+
+  // Payment settings state
+  type PaymentSetting = { key: string; value: string; set: boolean };
+  const [paymentSettings, setPaymentSettings] = useState<PaymentSetting[]>([]);
+  const [paymentForm, setPaymentForm] = useState({ stripe_publishable_key: "", stripe_secret_key: "", stripe_webhook_secret: "" });
+  const [paymentSaving, setPaymentSaving] = useState(false);
+  const [paymentSaved, setPaymentSaved] = useState(false);
 
   const loadData = useCallback(async (key: string) => {
     setLoading(true);
@@ -113,6 +120,14 @@ export default function AdminPage() {
     setSignups(stats.recentSignups);
     setMerchants(stats.merchantStats);
     setReceipts(recs);
+
+    // Load payment settings
+    const psRes = await fetch("/api/admin/settings", { headers: { "x-admin-key": key } });
+    if (psRes.ok) {
+      const ps = await psRes.json();
+      setPaymentSettings(ps);
+    }
+
     setAuthed(true);
     setLoading(false);
   }, []);
@@ -189,7 +204,28 @@ export default function AdminPage() {
     { key: "merchants", label: `Händler (${merchants.length})` },
     { key: "users", label: `Nutzer (${signups.length})` },
     { key: "receipts", label: `Kassenbons (${receipts.length})` },
+    { key: "payments", label: "💳 Zahlungen" },
   ] as const;
+
+  async function savePaymentSettings() {
+    const key = sessionStorage.getItem("admin_key") ?? "";
+    setPaymentSaving(true);
+    const toSave = Object.fromEntries(
+      Object.entries(paymentForm).filter(([, v]) => v.trim() !== "")
+    );
+    await fetch("/api/admin/settings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-admin-key": key },
+      body: JSON.stringify(toSave),
+    });
+    setPaymentSaving(false);
+    setPaymentSaved(true);
+    setPaymentForm({ stripe_publishable_key: "", stripe_secret_key: "", stripe_webhook_secret: "" });
+    setTimeout(() => setPaymentSaved(false), 3000);
+    // Reload settings
+    const psRes = await fetch("/api/admin/settings", { headers: { "x-admin-key": key } });
+    if (psRes.ok) setPaymentSettings(await psRes.json());
+  }
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
@@ -505,6 +541,78 @@ export default function AdminPage() {
                   <p>Keine Kassenbons gefunden</p>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+        {/* PAYMENTS */}
+        {tab === "payments" && (
+          <div className="max-w-2xl space-y-6">
+            {/* Status */}
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { key: "stripe_publishable_key", label: "Publishable Key", icon: "🔑" },
+                { key: "stripe_secret_key", label: "Secret Key", icon: "🔒" },
+                { key: "stripe_webhook_secret", label: "Webhook Secret", icon: "🪝" },
+              ].map(({ key, label, icon }) => {
+                const s = paymentSettings.find((p) => p.key === key);
+                return (
+                  <div key={key} className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+                    <p className="text-xl mb-2">{icon}</p>
+                    <p className="text-xs text-gray-400 mb-1">{label}</p>
+                    {s?.set ? (
+                      <div>
+                        <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">✓ Gesetzt</span>
+                        <p className="text-xs text-gray-600 font-mono mt-1">{s.value}</p>
+                      </div>
+                    ) : (
+                      <span className="text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full">✗ Fehlt</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* How to get keys */}
+            <div className="bg-gray-800 rounded-xl p-5 border border-gray-700 text-sm text-gray-400 space-y-2">
+              <p className="font-semibold text-white">So richtest du Stripe ein:</p>
+              <ol className="list-decimal list-inside space-y-1">
+                <li>Gehe zu <span className="text-blue-400">dashboard.stripe.com</span> und erstelle ein Konto</li>
+                <li>Unter <span className="text-gray-300">Entwickler → API-Schlüssel</span>: Publishable Key + Secret Key kopieren</li>
+                <li>Unter <span className="text-gray-300">Entwickler → Webhooks</span>: Endpoint hinzufügen → URL: <code className="text-green-400 bg-gray-900 px-1 rounded">/api/webhooks/stripe</code></li>
+                <li>Events: <code className="text-green-400 bg-gray-900 px-1 rounded">checkout.session.completed</code> + <code className="text-green-400 bg-gray-900 px-1 rounded">customer.subscription.deleted</code></li>
+                <li>Webhook Signing Secret kopieren und unten eintragen</li>
+              </ol>
+              <p className="text-xs text-gray-600 mt-2">PayPal, Klarna und SEPA aktivierst du in Stripe unter Einstellungen → Zahlungsmethoden — sie erscheinen dann automatisch im Checkout.</p>
+            </div>
+
+            {/* Form */}
+            <div className="bg-gray-800 rounded-xl p-5 border border-gray-700">
+              <h3 className="font-semibold text-white mb-4">Keys hinterlegen</h3>
+              <div className="space-y-3">
+                {[
+                  { field: "stripe_publishable_key" as const, label: "Publishable Key", placeholder: "pk_live_..." },
+                  { field: "stripe_secret_key" as const, label: "Secret Key", placeholder: "sk_live_..." },
+                  { field: "stripe_webhook_secret" as const, label: "Webhook Secret", placeholder: "whsec_..." },
+                ].map(({ field, label, placeholder }) => (
+                  <div key={field}>
+                    <label className="text-xs text-gray-400 mb-1 block">{label}</label>
+                    <input
+                      type="password"
+                      placeholder={placeholder}
+                      value={paymentForm[field]}
+                      onChange={(e) => setPaymentForm((p) => ({ ...p, [field]: e.target.value }))}
+                      className="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-600"
+                    />
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={savePaymentSettings}
+                disabled={paymentSaving || Object.values(paymentForm).every((v) => !v.trim())}
+                className="mt-4 w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm"
+              >
+                {paymentSaving ? "Speichern…" : paymentSaved ? "✓ Gespeichert" : "Keys speichern"}
+              </button>
             </div>
           </div>
         )}

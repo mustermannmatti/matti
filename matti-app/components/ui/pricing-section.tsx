@@ -6,7 +6,7 @@ import NumberFlow from "@number-flow/react";
 import { CheckCheck, Receipt, BarChart2, Smartphone, Store, Headphones, ShieldCheck, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { useRef, useState, useMemo } from "react";
+import { useRef, useState, useMemo, useCallback } from "react";
 
 const plans = [
   {
@@ -15,7 +15,8 @@ const plans = [
     price: 0,
     yearlyPrice: 0,
     buttonText: "Jetzt kostenlos starten",
-    buttonHref: "/dashboard",
+    buttonHref: "/register",
+    planKey: null,
     popular: false,
     features: [
       { text: "Bis zu 50 Kassenbons", icon: <Receipt size={18} /> },
@@ -36,7 +37,8 @@ const plans = [
     price: 4.99,
     yearlyPrice: 49,
     buttonText: "Pro starten",
-    buttonHref: "/register",
+    buttonHref: null,
+    planKey: "pro",
     popular: true,
     features: [
       { text: "Unbegrenzte Kassenbons", icon: <Receipt size={18} /> },
@@ -57,7 +59,8 @@ const plans = [
     price: 24.99,
     yearlyPrice: 249,
     buttonText: "Als Händler starten",
-    buttonHref: "/register",
+    buttonHref: null,
+    planKey: "merchant",
     popular: false,
     features: [
       { text: "QR-Code & NFC Generierung", icon: <Zap size={18} /> },
@@ -134,7 +137,22 @@ const PricingSwitch = ({ onSwitch }: { onSwitch: (value: string) => void }) => {
 
 export default function PricingSection() {
   const [isYearly, setIsYearly] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const pricingRef = useRef<HTMLDivElement>(null);
+
+  const startCheckout = useCallback(async (planKey: string) => {
+    setCheckoutLoading(planKey);
+    const res = await fetch("/api/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ plan: planKey, interval: isYearly ? "year" : "month" }),
+    });
+    const data = await res.json();
+    if (res.status === 401) { window.location.href = "/login?callbackUrl=/pricing"; return; }
+    if (data.url) { window.location.href = data.url; return; }
+    alert(data.error ?? "Fehler beim Laden des Checkouts.");
+    setCheckoutLoading(null);
+  }, [isYearly]);
 
   const revealVariants = useMemo(() => ({
     visible: (i: number) => ({
@@ -270,16 +288,30 @@ export default function PricingSection() {
               </CardHeader>
 
               <CardContent className="pt-0 flex flex-col flex-1">
-                <Link
-                  href={plan.buttonHref}
-                  className={`w-full mb-6 py-3 px-4 text-base font-semibold rounded-xl text-center transition-all block ${
-                    plan.popular
-                      ? "bg-gradient-to-b from-blue-500 to-blue-700 text-white shadow-lg shadow-blue-300 hover:shadow-blue-400 hover:from-blue-400 hover:to-blue-600"
-                      : "bg-gradient-to-b from-gray-800 to-gray-950 text-white shadow-lg shadow-gray-400 hover:from-gray-700 hover:to-gray-900"
-                  }`}
-                >
-                  {plan.buttonText}
-                </Link>
+                {plan.buttonHref ? (
+                  <Link
+                    href={plan.buttonHref}
+                    className={`w-full mb-6 py-3 px-4 text-base font-semibold rounded-xl text-center transition-all block ${
+                      plan.popular
+                        ? "bg-gradient-to-b from-blue-500 to-blue-700 text-white shadow-lg shadow-blue-300 hover:shadow-blue-400 hover:from-blue-400 hover:to-blue-600"
+                        : "bg-gradient-to-b from-gray-800 to-gray-950 text-white shadow-lg shadow-gray-400 hover:from-gray-700 hover:to-gray-900"
+                    }`}
+                  >
+                    {plan.buttonText}
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => plan.planKey && startCheckout(plan.planKey)}
+                    disabled={checkoutLoading === plan.planKey}
+                    className={`w-full mb-6 py-3 px-4 text-base font-semibold rounded-xl text-center transition-all block disabled:opacity-60 ${
+                      plan.popular
+                        ? "bg-gradient-to-b from-blue-500 to-blue-700 text-white shadow-lg shadow-blue-300 hover:shadow-blue-400 hover:from-blue-400 hover:to-blue-600"
+                        : "bg-gradient-to-b from-gray-800 to-gray-950 text-white shadow-lg shadow-gray-400 hover:from-gray-700 hover:to-gray-900"
+                    }`}
+                  >
+                    {checkoutLoading === plan.planKey ? "Weiterleitung…" : plan.buttonText}
+                  </button>
+                )}
 
                 <ul className="space-y-2.5 mb-6">
                   {plan.features.map((feature, i) => (

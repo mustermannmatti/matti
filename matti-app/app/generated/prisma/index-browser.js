@@ -123,7 +123,25 @@ exports.Prisma.UserScalarFieldEnum = {
   name: 'name',
   password: 'password',
   role: 'role',
+  plan: 'plan',
+  stripeCustomerId: 'stripeCustomerId',
   createdAt: 'createdAt'
+};
+
+exports.Prisma.SubscriptionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  stripeSubscriptionId: 'stripeSubscriptionId',
+  stripeSessionId: 'stripeSessionId',
+  plan: 'plan',
+  status: 'status',
+  currentPeriodEnd: 'currentPeriodEnd',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.SettingsScalarFieldEnum = {
+  key: 'key',
+  value: 'value'
 };
 
 exports.Prisma.StoreScalarFieldEnum = {
@@ -181,6 +199,8 @@ exports.Prisma.NullsOrder = {
 
 exports.Prisma.ModelName = {
   User: 'User',
+  Subscription: 'Subscription',
+  Settings: 'Settings',
   Store: 'Store',
   ApiKey: 'ApiKey',
   Receipt: 'Receipt',
