@@ -179,7 +179,7 @@ export function HeroSection() {
                   className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3"
                 >
                   <Button asChild size="lg" className="rounded-xl px-8 text-base bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200">
-                    <Link href="/dashboard">Kostenlos starten →</Link>
+                    <Link href="/register">Kostenlos starten →</Link>
                   </Button>
                   <Button asChild size="lg" variant="outline" className="rounded-xl px-8 text-base border-gray-200 hover:border-blue-200">
                     <Link href="/register">Als Händler registrieren</Link>
@@ -230,10 +230,10 @@ export function HeroSection() {
               Überzeugt? Starte jetzt kostenlos – in weniger als einer Minute eingerichtet.
             </p>
             <Link
-              href="/dashboard"
+              href="/register"
               className="inline-flex items-center gap-3 bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 rounded-2xl font-bold text-lg transition-all shadow-lg shadow-blue-200 hover:shadow-xl hover:scale-105 duration-200"
             >
-              <span>App ausprobieren</span>
+              <span>Kostenlos registrieren</span>
               <ArrowRight className="size-5" />
             </Link>
             <div className="mt-8 flex items-center justify-center gap-8 text-sm text-gray-400">
@@ -339,7 +339,7 @@ const HeroHeader = () => {
                   <Link href="/register">Registrieren</Link>
                 </Button>
                 <Button asChild size="sm" className={cn("rounded-lg bg-blue-600 hover:bg-blue-700", isScrolled ? "lg:inline-flex" : "hidden")}>
-                  <Link href="/dashboard">Jetzt starten</Link>
+                  <Link href="/register">Jetzt starten</Link>
                 </Button>
               </div>
             </div>
