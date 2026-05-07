@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { HeroSection } from "@/components/blocks/hero-section-1";
 import { FeaturesSection } from "@/components/blocks/features-section";
+import { TestimonialsSection } from "@/components/blocks/testimonials-section";
 
 export default function HomePage() {
   return (
@@ -62,6 +63,8 @@ export default function HomePage() {
       </section>
 
       <FeaturesSection />
+
+      <TestimonialsSection />
 
       {/* CTA */}
       <section className="bg-gradient-to-br from-blue-600 to-blue-800 px-6 py-20 text-center text-white">
