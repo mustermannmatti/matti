@@ -131,7 +131,18 @@ exports.Prisma.StoreScalarFieldEnum = {
   name: 'name',
   address: 'address',
   logo: 'logo',
+  taxId: 'taxId',
   userId: 'userId'
+};
+
+exports.Prisma.ApiKeyScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  name: 'name',
+  storeId: 'storeId',
+  active: 'active',
+  createdAt: 'createdAt',
+  lastUsedAt: 'lastUsedAt'
 };
 
 exports.Prisma.ReceiptScalarFieldEnum = {
@@ -171,6 +182,7 @@ exports.Prisma.NullsOrder = {
 exports.Prisma.ModelName = {
   User: 'User',
   Store: 'Store',
+  ApiKey: 'ApiKey',
   Receipt: 'Receipt',
   ReceiptItem: 'ReceiptItem'
 };
