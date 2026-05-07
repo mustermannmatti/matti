@@ -20,7 +20,7 @@ export default function HomePage() {
               {
                 icon: "📱",
                 title: "2. Handy antippen",
-                desc: "Du tippst dein Smartphone kurz ans Terminal. Der Bon wird sofort deinem Matti-Konto zugeordnet.",
+                desc: "Du tippst dein Smartphone kurz ans Terminal. Der Bon wird sofort deinem Tappr-Konto zugeordnet.",
               },
               {
                 icon: "📊",
@@ -49,7 +49,7 @@ export default function HomePage() {
               { icon: "🧾", title: "Digitale Kassenbons", desc: "Alle Bons werden sicher in der Cloud gespeichert – für immer abrufbar." },
               { icon: "📈", title: "Ausgaben-Analyse", desc: "Wofür gibst du dein Geld aus? Kategorisiert und visualisiert." },
               { icon: "🔍", title: "Schnelle Suche", desc: "Finde jeden Bon in Sekunden – nach Laden, Datum oder Produktname." },
-              { icon: "🏷️", title: "Automatische Kategorien", desc: "Lebensmittel, Drogerie, Technik – Matti erkennt die Kategorie automatisch." },
+              { icon: "🏷️", title: "Automatische Kategorien", desc: "Lebensmittel, Drogerie, Technik – Tappr erkennt die Kategorie automatisch." },
               { icon: "📲", title: "NFC & QR-Transfer", desc: "An der Kasse einfach antippen oder QR-Code scannen – fertig." },
               { icon: "🌱", title: "Nachhaltiger", desc: "Kein Thermopapier mehr. Gut für dich, gut für die Umwelt." },
             ].map((f) => (
@@ -88,7 +88,7 @@ export default function HomePage() {
       </section>
 
       <footer className="bg-white border-t border-gray-200 px-6 py-6 text-center text-sm text-gray-500">
-        © 2026 Matti – Digitale Kassenbons
+        © 2026 Tappr – Digitale Kassenbons
       </footer>
     </>
   );

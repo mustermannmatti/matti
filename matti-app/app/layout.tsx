@@ -9,8 +9,8 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Matti – Digitale Kassenbons",
-  description: "Deine Ausgaben im Blick – alle Kassenbons digital, kein Papier mehr.",
+  title: "Tappr – Digitale Kassenbons",
+  description: "Kassenbons per NFC oder QR-Code – digital, sicher, immer dabei.",
 };
 
 export default function RootLayout({

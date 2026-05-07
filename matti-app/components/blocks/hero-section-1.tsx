@@ -76,11 +76,11 @@ export function HeroSection() {
               <div className="text-center sm:mx-auto lg:mr-auto lg:mt-0">
                 <AnimatedGroup variants={transitionVariants}>
                   <Link
-                    href="#"
+                    href="/dashboard"
                     className="hover:bg-background dark:hover:border-t-border bg-muted group mx-auto flex w-fit items-center gap-4 rounded-full border p-1 pl-4 shadow-md shadow-black/5 transition-all duration-300 dark:border-t-white/5 dark:shadow-zinc-950"
                   >
                     <span className="text-foreground text-sm">
-                      Introducing Support for AI Models
+                      ✨ Neu: Kassenbons per NFC – kein Papier mehr
                     </span>
                     <span className="dark:border-background block h-4 w-0.5 border-l bg-white dark:bg-zinc-700"></span>
                     <div className="bg-background group-hover:bg-muted size-6 overflow-hidden rounded-full duration-500">
@@ -96,11 +96,10 @@ export function HeroSection() {
                   </Link>
 
                   <h1 className="mt-8 max-w-4xl mx-auto text-balance text-6xl md:text-7xl lg:mt-16 xl:text-[5.25rem]">
-                    Modern Solutions for Customer Engagement
+                    Deine Kassenbons. Digital. Sicher. Immer dabei.
                   </h1>
                   <p className="mx-auto mt-8 max-w-2xl text-balance text-lg">
-                    Highly customizable components for building modern websites
-                    and applications that look and feel the way you mean it.
+                    Tappr speichert alle deine Kassenbons automatisch – per NFC oder QR-Code an der Kasse. Kein Papier, keine Unordnung, alle Ausgaben auf einen Blick.
                   </p>
                 </AnimatedGroup>
 
@@ -117,8 +116,8 @@ export function HeroSection() {
                 >
                   <div className="bg-foreground/10 rounded-[14px] border p-0.5">
                     <Button asChild size="lg" className="rounded-xl px-5 text-base">
-                      <Link href="#">
-                        <span className="text-nowrap">Start Building</span>
+                      <Link href="/dashboard">
+                        <span className="text-nowrap">App ausprobieren</span>
                       </Link>
                     </Button>
                   </div>
@@ -128,8 +127,8 @@ export function HeroSection() {
                     variant="ghost"
                     className="h-10.5 rounded-xl px-5"
                   >
-                    <Link href="#">
-                      <span className="text-nowrap">Request a demo</span>
+                    <Link href="/register">
+                      <span className="text-nowrap">Als Händler registrieren</span>
                     </Link>
                   </Button>
                 </AnimatedGroup>
@@ -176,10 +175,10 @@ export function HeroSection() {
           <div className="group relative m-auto max-w-5xl px-6">
             <div className="absolute inset-0 z-10 flex scale-95 items-center justify-center opacity-0 duration-500 group-hover:scale-100 group-hover:opacity-100">
               <Link
-                href="/"
+                href="/dashboard"
                 className="block text-sm duration-150 hover:opacity-75"
               >
-                <span>Meet Our Customers</span>
+                <span>App ausprobieren</span>
                 <ChevronRight className="ml-1 inline-block size-3" />
               </Link>
             </div>
@@ -213,10 +212,10 @@ export function HeroSection() {
 }
 
 const menuItems = [
-  { name: "Features", href: "#" },
-  { name: "Solution", href: "#" },
-  { name: "Pricing", href: "/pricing" },
-  { name: "About", href: "#" },
+  { name: "Features", href: "/#features" },
+  { name: "So funktionierts", href: "/#how-it-works" },
+  { name: "Preise", href: "/pricing" },
+  { name: "Dashboard", href: "/dashboard" },
 ];
 
 const HeroHeader = () => {
@@ -245,7 +244,10 @@ const HeroHeader = () => {
           <div className="relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4">
             <div className="flex w-full justify-between lg:w-auto">
               <Link href="/" aria-label="home" className="flex items-center space-x-2">
-                <Logo />
+                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">T</span>
+                </div>
+                <span className="font-bold text-xl">Tappr</span>
               </Link>
               <button
                 onClick={() => setMenuState(!menuState)}
@@ -295,12 +297,12 @@ const HeroHeader = () => {
                   className={cn(isScrolled && "lg:hidden")}
                 >
                   <Link href="/login">
-                    <span>Login</span>
+                    <span>Anmelden</span>
                   </Link>
                 </Button>
                 <Button asChild size="sm" className={cn(isScrolled && "lg:hidden")}>
                   <Link href="/register">
-                    <span>Sign Up</span>
+                    <span>Registrieren</span>
                   </Link>
                 </Button>
                 <Button
@@ -309,7 +311,7 @@ const HeroHeader = () => {
                   className={cn(isScrolled ? "lg:inline-flex" : "hidden")}
                 >
                   <Link href="/register">
-                    <span>Get Started</span>
+                    <span>Jetzt starten</span>
                   </Link>
                 </Button>
               </div>
