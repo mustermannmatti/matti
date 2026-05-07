@@ -14,8 +14,10 @@ export const authConfig: NextAuthConfig = {
       const isOnPOS = nextUrl.pathname.startsWith("/pos");
       const isOnDashboard = nextUrl.pathname.startsWith("/dashboard");
 
+      const isOnOnboarding = nextUrl.pathname.startsWith("/onboarding");
+
       if (!isLoggedIn) {
-        if (isOnPOS || isOnDashboard) return false;
+        if (isOnPOS || isOnDashboard || isOnOnboarding) return false;
         return true;
       }
 
@@ -24,8 +26,11 @@ export const authConfig: NextAuthConfig = {
         return Response.redirect(new URL("/pos", nextUrl));
       }
 
-      // Redirect consumers away from merchant POS
+      // Redirect consumers away from merchant POS and onboarding
       if (isOnPOS && role === "consumer") {
+        return Response.redirect(new URL("/dashboard", nextUrl));
+      }
+      if (isOnOnboarding && role === "consumer") {
         return Response.redirect(new URL("/dashboard", nextUrl));
       }
 
