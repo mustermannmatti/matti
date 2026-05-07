@@ -6,6 +6,7 @@ import Link from "next/link";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const [role, setRole] = useState<"consumer" | "merchant">("consumer");
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -13,6 +14,7 @@ export default function RegisterPage() {
     passwordConfirm: "",
     storeName: "",
     storeAddress: "",
+    taxId: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -43,8 +45,10 @@ export default function RegisterPage() {
         name: form.name,
         email: form.email,
         password: form.password,
+        role,
         storeName: form.storeName,
         storeAddress: form.storeAddress,
+        taxId: form.taxId,
       }),
     });
 
@@ -56,7 +60,7 @@ export default function RegisterPage() {
       return;
     }
 
-    router.push("/login?registered=1");
+    router.push(role === "merchant" ? "/login?registered=1" : "/dashboard");
   }
 
   return (
@@ -70,16 +74,49 @@ export default function RegisterPage() {
             </div>
             <span className="font-bold text-2xl text-gray-900">Tappr</span>
           </Link>
-          <p className="text-gray-500 mt-2 text-sm">Händler-Konto erstellen</p>
+          <p className="text-gray-500 mt-2 text-sm">Konto erstellen</p>
+        </div>
+
+        {/* Role toggle */}
+        <div className="bg-gray-100 rounded-2xl p-1 flex mb-6">
+          <button
+            type="button"
+            onClick={() => setRole("consumer")}
+            className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              role === "consumer"
+                ? "bg-white text-gray-900 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            👤 Kunde
+          </button>
+          <button
+            type="button"
+            onClick={() => setRole("merchant")}
+            className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              role === "merchant"
+                ? "bg-white text-gray-900 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            🏪 Händler
+          </button>
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-          <h1 className="text-xl font-bold text-gray-900 mb-6">Registrieren</h1>
+          <h1 className="text-xl font-bold text-gray-900 mb-1">
+            {role === "consumer" ? "Kundenkonto erstellen" : "Händler-Konto erstellen"}
+          </h1>
+          <p className="text-sm text-gray-500 mb-6">
+            {role === "consumer"
+              ? "Speichere Kassenbons und behalte deine Ausgaben im Blick."
+              : "Stelle deinen Kunden digitale Kassenbons aus."}
+          </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Dein Name
+                {role === "consumer" ? "Dein Name" : "Name des Inhabers"}
               </label>
               <input
                 type="text"
@@ -87,29 +124,25 @@ export default function RegisterPage() {
                 onChange={(e) => update("name", e.target.value)}
                 required
                 autoFocus
-                placeholder="Max Mustermann"
+                placeholder={role === "consumer" ? "Max Mustermann" : "Max Mustermann"}
                 className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                E-Mail
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">E-Mail</label>
               <input
                 type="email"
                 value={form.email}
                 onChange={(e) => update("email", e.target.value)}
                 required
-                placeholder="max@meinladen.de"
+                placeholder={role === "consumer" ? "deine@email.de" : "inhaber@meinladen.de"}
                 className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Passwort
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Passwort</label>
               <input
                 type="password"
                 value={form.password}
@@ -134,11 +167,13 @@ export default function RegisterPage() {
               />
             </div>
 
-            <div className="border-t border-gray-100 pt-4">
-              <p className="text-xs text-gray-500 mb-3 font-medium uppercase tracking-wide">
-                Laden-Informationen
-              </p>
-              <div className="space-y-3">
+            {/* Merchant-only fields */}
+            {role === "merchant" && (
+              <div className="border-t border-gray-100 pt-4 space-y-4">
+                <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                  Laden-Informationen
+                </p>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Name des Ladens
@@ -147,11 +182,12 @@ export default function RegisterPage() {
                     type="text"
                     value={form.storeName}
                     onChange={(e) => update("storeName", e.target.value)}
-                    required
+                    required={role === "merchant"}
                     placeholder="Mein Supermarkt"
                     className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Adresse <span className="text-gray-400">(optional)</span>
@@ -164,8 +200,25 @@ export default function RegisterPage() {
                     className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Steuer-ID / USt-IdNr.
+                  </label>
+                  <input
+                    type="text"
+                    value={form.taxId}
+                    onChange={(e) => update("taxId", e.target.value)}
+                    required={role === "merchant"}
+                    placeholder="DE123456789"
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">
+                    Umsatzsteuer-Identifikationsnummer deines Unternehmens
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
 
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
@@ -178,7 +231,11 @@ export default function RegisterPage() {
               disabled={loading}
               className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold py-3 rounded-xl transition-colors"
             >
-              {loading ? "Konto wird erstellt…" : "Konto erstellen"}
+              {loading
+                ? "Konto wird erstellt…"
+                : role === "consumer"
+                ? "Kostenlos registrieren"
+                : "Händler-Konto erstellen"}
             </button>
           </form>
         </div>

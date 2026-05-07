@@ -33,6 +33,52 @@ type MerchantStat = {
   totalVolume: number;
 };
 
+type ReceiptItem = {
+  id: string;
+  name: string;
+  quantity: number;
+  price: number;
+  total: number;
+};
+
+type AdminReceipt = {
+  id: string;
+  token: string;
+  total: number;
+  subtotal: number;
+  tax: number;
+  category: string;
+  status: string;
+  createdAt: string;
+  claimedAt: string | null;
+  store: {
+    name: string;
+    address: string;
+    user: { name: string; email: string };
+  };
+  consumer: { name: string; email: string } | null;
+  items: ReceiptItem[];
+};
+
+function RoleBadge({ role }: { role: string }) {
+  const map: Record<string, string> = {
+    merchant: "bg-blue-500/20 text-blue-400",
+    consumer: "bg-purple-500/20 text-purple-400",
+    admin: "bg-red-500/20 text-red-400",
+  };
+  const label: Record<string, string> = { merchant: "Händler", consumer: "Kunde", admin: "Admin" };
+  return (
+    <span className={`text-xs px-2 py-0.5 rounded-full ${map[role] ?? "bg-gray-500/20 text-gray-400"}`}>
+      {label[role] ?? role}
+    </span>
+  );
+}
+
+function StatusBadge({ status, claimedAt }: { status: string; claimedAt: string | null }) {
+  if (claimedAt) return <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/20 text-green-400">Eingelöst</span>;
+  return <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400">Ausstehend</span>;
+}
+
 export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [authed, setAuthed] = useState(false);
@@ -42,45 +88,58 @@ export default function AdminPage() {
   const [overview, setOverview] = useState<Overview | null>(null);
   const [signups, setSignups] = useState<Signup[]>([]);
   const [merchants, setMerchants] = useState<MerchantStat[]>([]);
-  const [tab, setTab] = useState<"overview" | "merchants" | "users">("overview");
+  const [receipts, setReceipts] = useState<AdminReceipt[]>([]);
+  const [expandedReceipt, setExpandedReceipt] = useState<string | null>(null);
+  const [tab, setTab] = useState<"overview" | "merchants" | "users" | "receipts">("overview");
 
-  const storedKey =
-    typeof window !== "undefined" ? sessionStorage.getItem("admin_key") : null;
+  const [receiptSearch, setReceiptSearch] = useState("");
 
   const loadData = useCallback(async (key: string) => {
     setLoading(true);
-    const res = await fetch("/api/admin/stats", {
-      headers: { "x-admin-key": key },
-    });
-    if (res.status === 401) {
+    const [statsRes, receiptsRes] = await Promise.all([
+      fetch("/api/admin/stats", { headers: { "x-admin-key": key } }),
+      fetch("/api/admin/receipts", { headers: { "x-admin-key": key } }),
+    ]);
+    if (statsRes.status === 401) {
       setAuthError(true);
       sessionStorage.removeItem("admin_key");
       setAuthed(false);
       setLoading(false);
       return;
     }
-    const data = await res.json();
-    setOverview(data.overview);
-    setSignups(data.recentSignups);
-    setMerchants(data.merchantStats);
+    const stats = await statsRes.json();
+    const recs = await receiptsRes.json();
+    setOverview(stats.overview);
+    setSignups(stats.recentSignups);
+    setMerchants(stats.merchantStats);
+    setReceipts(recs);
     setAuthed(true);
     setLoading(false);
   }, []);
 
   useEffect(() => {
-    if (storedKey) {
-      loadData(storedKey);
-    }
-  }, [storedKey, loadData]);
+    const storedKey = sessionStorage.getItem("admin_key");
+    if (storedKey) loadData(storedKey);
+  }, [loadData]);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setAuthError(false);
+    sessionStorage.setItem("admin_key", password);
     await loadData(password);
-    if (!authError) {
-      sessionStorage.setItem("admin_key", password);
-    }
   }
+
+  const filteredReceipts = receipts.filter((r) => {
+    if (!receiptSearch) return true;
+    const q = receiptSearch.toLowerCase();
+    return (
+      r.store.name.toLowerCase().includes(q) ||
+      r.category.toLowerCase().includes(q) ||
+      r.consumer?.name.toLowerCase().includes(q) ||
+      r.consumer?.email.toLowerCase().includes(q) ||
+      r.items.some((i) => i.name.toLowerCase().includes(q))
+    );
+  });
 
   if (!authed) {
     return (
@@ -94,9 +153,7 @@ export default function AdminPage() {
             <p className="text-gray-400 text-sm mt-1">Nur für Tappr-Entwickler</p>
           </div>
           <form onSubmit={handleLogin} className="bg-gray-800 rounded-2xl p-6 border border-gray-700">
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Admin-Passwort
-            </label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Admin-Passwort</label>
             <input
               type="password"
               value={password}
@@ -105,9 +162,7 @@ export default function AdminPage() {
               placeholder="••••••••••••"
               className="w-full bg-gray-700 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 placeholder-gray-500"
             />
-            {authError && (
-              <p className="text-red-400 text-sm mb-3">Falsches Passwort.</p>
-            )}
+            {authError && <p className="text-red-400 text-sm mb-3">Falsches Passwort.</p>}
             <button
               type="submit"
               disabled={!password}
@@ -129,16 +184,15 @@ export default function AdminPage() {
     );
   }
 
-  const statCards = [
-    { label: "Registrierte Händler", value: overview.totalMerchants, color: "text-blue-400" },
-    { label: "Kunden (Consumer)", value: overview.totalConsumers, color: "text-purple-400" },
-    { label: "Kassenbons gesamt", value: overview.totalReceipts, color: "text-green-400" },
-    { label: "Umsatzvolumen (Bons)", value: formatCurrency(overview.totalVolume), color: "text-yellow-400" },
-  ];
+  const tabs = [
+    { key: "overview", label: "Übersicht" },
+    { key: "merchants", label: `Händler (${merchants.length})` },
+    { key: "users", label: `Nutzer (${signups.length})` },
+    { key: "receipts", label: `Kassenbons (${receipts.length})` },
+  ] as const;
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
-      {/* Header */}
       <header className="border-b border-gray-800 px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -151,10 +205,7 @@ export default function AdminPage() {
             </span>
           </div>
           <button
-            onClick={() => {
-              sessionStorage.removeItem("admin_key");
-              setAuthed(false);
-            }}
+            onClick={() => { sessionStorage.removeItem("admin_key"); setAuthed(false); }}
             className="text-sm text-gray-400 hover:text-red-400 transition-colors"
           >
             Abmelden
@@ -163,9 +214,14 @@ export default function AdminPage() {
       </header>
 
       <div className="max-w-6xl mx-auto px-6 py-8">
-        {/* Overview stats */}
+        {/* Stat cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          {statCards.map((s) => (
+          {[
+            { label: "Händler", value: overview.totalMerchants, color: "text-blue-400" },
+            { label: "Kunden", value: overview.totalConsumers, color: "text-purple-400" },
+            { label: "Kassenbons", value: overview.totalReceipts, color: "text-green-400" },
+            { label: "Umsatzvolumen", value: formatCurrency(overview.totalVolume), color: "text-yellow-400" },
+          ].map((s) => (
             <div key={s.label} className="bg-gray-800 rounded-2xl p-5 border border-gray-700">
               <p className="text-gray-400 text-xs mb-2">{s.label}</p>
               <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
@@ -174,23 +230,21 @@ export default function AdminPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 border-b border-gray-800 pb-0">
-          {(["overview", "merchants", "users"] as const).map((t) => (
+        <div className="flex gap-1 mb-6 bg-gray-800/50 p-1 rounded-xl w-fit">
+          {tabs.map((t) => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors -mb-px ${
-                tab === t
-                  ? "bg-gray-800 text-white border border-gray-700 border-b-gray-800"
-                  : "text-gray-400 hover:text-white"
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                tab === t.key ? "bg-gray-700 text-white" : "text-gray-400 hover:text-white"
               }`}
             >
-              {t === "overview" ? "Übersicht" : t === "merchants" ? "Händler" : "Alle Nutzer"}
+              {t.label}
             </button>
           ))}
         </div>
 
-        {/* Overview tab */}
+        {/* OVERVIEW */}
         {tab === "overview" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
@@ -208,9 +262,7 @@ export default function AdminPage() {
                       <p className="text-xs text-gray-400 truncate">{u.email}</p>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${u.role === "merchant" ? "bg-blue-500/20 text-blue-400" : "bg-purple-500/20 text-purple-400"}`}>
-                        {u.role === "merchant" ? "Händler" : "Kunde"}
-                      </span>
+                      <RoleBadge role={u.role} />
                       <p className="text-xs text-gray-500 mt-1">{formatDate(u.createdAt)}</p>
                     </div>
                   </li>
@@ -219,47 +271,27 @@ export default function AdminPage() {
             </div>
 
             <div className="bg-gray-800 rounded-2xl border border-gray-700 p-5">
-              <h2 className="font-semibold mb-4">Plattform-Statistiken</h2>
-              <div className="space-y-4">
-                {[
-                  { label: "Gesamte Nutzer", value: overview.totalUsers, max: overview.totalUsers, color: "bg-blue-500" },
-                  { label: "Händler", value: overview.totalMerchants, max: overview.totalUsers, color: "bg-cyan-500" },
-                  { label: "Kunden", value: overview.totalConsumers, max: overview.totalUsers, color: "bg-purple-500" },
-                ].map((s) => (
-                  <div key={s.label}>
-                    <div className="flex justify-between text-sm mb-1.5">
-                      <span className="text-gray-300">{s.label}</span>
-                      <span className="font-semibold">{s.value}</span>
+              <h2 className="font-semibold mb-4">Neueste Kassenbons</h2>
+              <ul className="space-y-2">
+                {receipts.slice(0, 6).map((r) => (
+                  <li key={r.id} className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-gray-400 truncate">{r.store.name}</span>
                     </div>
-                    <div className="w-full bg-gray-700 rounded-full h-2">
-                      <div
-                        className={`h-2 rounded-full ${s.color}`}
-                        style={{ width: s.max > 0 ? `${Math.round((s.value / s.max) * 100)}%` : "0%" }}
-                      />
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <StatusBadge status={r.status} claimedAt={r.claimedAt} />
+                      <span className="font-semibold text-yellow-400">{formatCurrency(r.total)}</span>
                     </div>
-                  </div>
+                  </li>
                 ))}
-                <div className="pt-3 border-t border-gray-700 mt-4 space-y-3">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-400">Kassenbons gesamt</span>
-                    <span className="font-semibold">{overview.totalReceipts}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-400">Umsatzvolumen (Bons)</span>
-                    <span className="font-semibold text-yellow-400">{formatCurrency(overview.totalVolume)}</span>
-                  </div>
-                </div>
-              </div>
+              </ul>
             </div>
           </div>
         )}
 
-        {/* Merchants tab */}
+        {/* MERCHANTS */}
         {tab === "merchants" && (
           <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
-            <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-              <h2 className="font-semibold">Alle Händler ({merchants.length})</h2>
-            </div>
             {merchants.length === 0 ? (
               <div className="p-12 text-center text-gray-500">
                 <p className="text-3xl mb-2">🏪</p>
@@ -273,9 +305,9 @@ export default function AdminPage() {
                       <th className="text-left px-4 py-3 font-medium">Händler</th>
                       <th className="text-left px-4 py-3 font-medium">Laden</th>
                       <th className="text-left px-4 py-3 font-medium">Adresse</th>
-                      <th className="text-right px-4 py-3 font-medium">Kassenbons</th>
+                      <th className="text-right px-4 py-3 font-medium">Bons</th>
                       <th className="text-right px-4 py-3 font-medium">Volumen</th>
-                      <th className="text-right px-4 py-3 font-medium">Registriert</th>
+                      <th className="text-right px-4 py-3 font-medium">Seit</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-700/50">
@@ -299,12 +331,9 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* All users tab */}
+        {/* USERS */}
         {tab === "users" && (
           <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
-            <div className="p-4 border-b border-gray-700">
-              <h2 className="font-semibold">Alle Nutzer ({signups.length})</h2>
-            </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -313,7 +342,7 @@ export default function AdminPage() {
                     <th className="text-left px-4 py-3 font-medium">E-Mail</th>
                     <th className="text-left px-4 py-3 font-medium">Rolle</th>
                     <th className="text-left px-4 py-3 font-medium">Laden</th>
-                    <th className="text-right px-4 py-3 font-medium">Kassenbons</th>
+                    <th className="text-right px-4 py-3 font-medium">Bons</th>
                     <th className="text-right px-4 py-3 font-medium">Registriert</th>
                   </tr>
                 </thead>
@@ -329,11 +358,7 @@ export default function AdminPage() {
                         </div>
                       </td>
                       <td className="px-4 py-3 text-gray-300">{u.email}</td>
-                      <td className="px-4 py-3">
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${u.role === "merchant" ? "bg-blue-500/20 text-blue-400" : u.role === "admin" ? "bg-red-500/20 text-red-400" : "bg-purple-500/20 text-purple-400"}`}>
-                          {u.role === "merchant" ? "Händler" : u.role === "admin" ? "Admin" : "Kunde"}
-                        </span>
-                      </td>
+                      <td className="px-4 py-3"><RoleBadge role={u.role} /></td>
                       <td className="px-4 py-3 text-gray-400">{u.storeName ?? "—"}</td>
                       <td className="px-4 py-3 text-right font-semibold">{u.receiptCount}</td>
                       <td className="px-4 py-3 text-right text-gray-400 text-xs">{formatDate(u.createdAt)}</td>
@@ -341,6 +366,145 @@ export default function AdminPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* RECEIPTS */}
+        {tab === "receipts" && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 mb-4">
+              <input
+                type="text"
+                placeholder="Suche nach Laden, Kunde, Produkt…"
+                value={receiptSearch}
+                onChange={(e) => setReceiptSearch(e.target.value)}
+                className="bg-gray-800 border border-gray-700 text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-72 placeholder-gray-500"
+              />
+              <span className="text-gray-400 text-sm">{filteredReceipts.length} Ergebnisse</span>
+            </div>
+
+            <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-700 text-gray-400 text-xs">
+                    <th className="text-left px-4 py-3 font-medium w-8"></th>
+                    <th className="text-left px-4 py-3 font-medium">Laden</th>
+                    <th className="text-left px-4 py-3 font-medium">Händler</th>
+                    <th className="text-left px-4 py-3 font-medium">Kunde</th>
+                    <th className="text-left px-4 py-3 font-medium">Kategorie</th>
+                    <th className="text-right px-4 py-3 font-medium">Artikel</th>
+                    <th className="text-right px-4 py-3 font-medium">Betrag</th>
+                    <th className="text-right px-4 py-3 font-medium">Status</th>
+                    <th className="text-right px-4 py-3 font-medium">Datum</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-700/50">
+                  {filteredReceipts.map((r) => (
+                    <>
+                      <tr
+                        key={r.id}
+                        className="hover:bg-gray-700/30 transition-colors cursor-pointer"
+                        onClick={() => setExpandedReceipt(expandedReceipt === r.id ? null : r.id)}
+                      >
+                        <td className="px-4 py-3 text-gray-400 text-xs">
+                          {expandedReceipt === r.id ? "▼" : "▶"}
+                        </td>
+                        <td className="px-4 py-3 font-medium text-white">{r.store.name}</td>
+                        <td className="px-4 py-3 text-gray-400 text-xs">{r.store.user.name}</td>
+                        <td className="px-4 py-3 text-gray-300 text-xs">
+                          {r.consumer ? r.consumer.name : <span className="text-gray-500 italic">Anonym</span>}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="text-xs bg-gray-700 text-gray-300 px-2 py-0.5 rounded-full">{r.category}</span>
+                        </td>
+                        <td className="px-4 py-3 text-right text-gray-300">{r.items.length}</td>
+                        <td className="px-4 py-3 text-right font-semibold text-yellow-400">{formatCurrency(r.total)}</td>
+                        <td className="px-4 py-3 text-right">
+                          <StatusBadge status={r.status} claimedAt={r.claimedAt} />
+                        </td>
+                        <td className="px-4 py-3 text-right text-gray-400 text-xs">{formatDate(r.createdAt)}</td>
+                      </tr>
+
+                      {/* Expanded detail row */}
+                      {expandedReceipt === r.id && (
+                        <tr key={`${r.id}-detail`} className="bg-gray-900/60">
+                          <td colSpan={9} className="px-6 py-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              {/* Items */}
+                              <div>
+                                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Artikel</p>
+                                <ul className="space-y-1.5">
+                                  {r.items.map((item) => (
+                                    <li key={item.id} className="flex items-center justify-between text-sm">
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-gray-500 text-xs w-5">{item.quantity}×</span>
+                                        <span className="text-gray-200">{item.name}</span>
+                                      </div>
+                                      <div className="flex items-center gap-4 text-xs text-gray-400">
+                                        <span>{formatCurrency(item.price)} / Stk.</span>
+                                        <span className="font-semibold text-white w-16 text-right">{formatCurrency(item.total)}</span>
+                                      </div>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+
+                              {/* Summary */}
+                              <div>
+                                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Zusammenfassung</p>
+                                <div className="space-y-2 text-sm">
+                                  <div className="flex justify-between text-gray-400">
+                                    <span>Zwischensumme</span>
+                                    <span>{formatCurrency(r.subtotal)}</span>
+                                  </div>
+                                  <div className="flex justify-between text-gray-400">
+                                    <span>MwSt. (19%)</span>
+                                    <span>{formatCurrency(r.tax)}</span>
+                                  </div>
+                                  <div className="flex justify-between font-bold text-white border-t border-gray-700 pt-2">
+                                    <span>Gesamt</span>
+                                    <span className="text-yellow-400">{formatCurrency(r.total)}</span>
+                                  </div>
+                                  <div className="pt-2 space-y-1 text-xs text-gray-500">
+                                    <div className="flex justify-between">
+                                      <span>Bon-ID</span>
+                                      <span className="font-mono">{r.token.slice(0, 12)}…</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>Erstellt</span>
+                                      <span>{formatDate(r.createdAt)}</span>
+                                    </div>
+                                    {r.claimedAt && (
+                                      <div className="flex justify-between">
+                                        <span>Eingelöst</span>
+                                        <span>{formatDate(r.claimedAt)}</span>
+                                      </div>
+                                    )}
+                                    {r.consumer && (
+                                      <div className="flex justify-between">
+                                        <span>Kunde</span>
+                                        <span>{r.consumer.name} ({r.consumer.email})</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
+                  ))}
+                </tbody>
+              </table>
+
+              {filteredReceipts.length === 0 && (
+                <div className="p-12 text-center text-gray-500">
+                  <p className="text-3xl mb-2">🧾</p>
+                  <p>Keine Kassenbons gefunden</p>
+                </div>
+              )}
             </div>
           </div>
         )}
