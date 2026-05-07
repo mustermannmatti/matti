@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { HeroSection } from "@/components/blocks/hero-section-1";
+import { FeaturesSection } from "@/components/blocks/features-section";
 
 export default function HomePage() {
   return (
@@ -60,79 +61,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Features */}
-      <section id="features" className="bg-gray-950 px-6 py-24">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
-            <span className="text-blue-400 text-sm font-semibold uppercase tracking-widest">Features</span>
-            <h2 className="text-4xl font-bold text-white mt-2">Alles was du brauchst</h2>
-            <p className="text-gray-400 mt-4 max-w-xl mx-auto">Tappr ist mehr als nur ein Kassenbon-Speicher – es ist dein digitales Ausgaben-Cockpit.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              {
-                icon: "🧾",
-                title: "Digitale Kassenbons",
-                desc: "Alle Bons werden sicher gespeichert – für immer abrufbar, nie wieder verloren.",
-                gradient: "from-blue-500/10 to-blue-500/5",
-                border: "border-blue-500/20",
-                iconBg: "bg-blue-500/20",
-              },
-              {
-                icon: "📊",
-                title: "Ausgaben-Analyse",
-                desc: "Wofür gibst du dein Geld aus? Kategorisiert, visualisiert, auf einen Blick.",
-                gradient: "from-purple-500/10 to-purple-500/5",
-                border: "border-purple-500/20",
-                iconBg: "bg-purple-500/20",
-              },
-              {
-                icon: "📲",
-                title: "NFC & QR-Transfer",
-                desc: "An der Kasse einfach antippen oder QR-Code scannen – der Bon ist sofort da.",
-                gradient: "from-cyan-500/10 to-cyan-500/5",
-                border: "border-cyan-500/20",
-                iconBg: "bg-cyan-500/20",
-              },
-              {
-                icon: "🔍",
-                title: "Schnelle Suche",
-                desc: "Finde jeden Bon in Sekunden – nach Laden, Datum oder Produktname.",
-                gradient: "from-orange-500/10 to-orange-500/5",
-                border: "border-orange-500/20",
-                iconBg: "bg-orange-500/20",
-              },
-              {
-                icon: "🏷️",
-                title: "Auto-Kategorisierung",
-                desc: "Lebensmittel, Drogerie, Technik – Tappr erkennt die Kategorie automatisch.",
-                gradient: "from-green-500/10 to-green-500/5",
-                border: "border-green-500/20",
-                iconBg: "bg-green-500/20",
-              },
-              {
-                icon: "🌱",
-                title: "Nachhaltig",
-                desc: "Kein Thermopapier mehr. Weniger Abfall, weniger Chemie. Gut für alle.",
-                gradient: "from-emerald-500/10 to-emerald-500/5",
-                border: "border-emerald-500/20",
-                iconBg: "bg-emerald-500/20",
-              },
-            ].map((f) => (
-              <div
-                key={f.title}
-                className={`relative rounded-2xl border p-6 bg-gradient-to-br ${f.gradient} ${f.border} hover:scale-105 transition-transform duration-200`}
-              >
-                <div className={`w-12 h-12 ${f.iconBg} rounded-xl flex items-center justify-center mb-4`}>
-                  <span className="text-2xl">{f.icon}</span>
-                </div>
-                <h3 className="font-bold text-white text-lg mb-2">{f.title}</h3>
-                <p className="text-gray-400 text-sm leading-relaxed">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <FeaturesSection />
 
       {/* CTA */}
       <section className="bg-gradient-to-br from-blue-600 to-blue-800 px-6 py-20 text-center text-white">
