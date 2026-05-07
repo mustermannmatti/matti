@@ -6,59 +6,128 @@ export default function HomePage() {
     <>
       <HeroSection />
 
-      {/* How it works */}
-      <section className="bg-white border-t border-gray-200 px-6 py-16">
+      {/* So funktioniert es */}
+      <section id="how-it-works" className="bg-white px-6 py-24">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12">So funktioniert es</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: "🏪",
-                title: "1. Laden stellt NFC bereit",
-                desc: "An jeder Kasse befindet sich ein NFC-Terminal oder QR-Code. Direkt in die Kassensoftware integriert.",
-              },
-              {
-                icon: "📱",
-                title: "2. Handy antippen",
-                desc: "Du tippst dein Smartphone kurz ans Terminal. Der Bon wird sofort deinem Tappr-Konto zugeordnet.",
-              },
-              {
-                icon: "📊",
-                title: "3. Ausgaben im Blick",
-                desc: "Alle Bons sind digital gespeichert – kategorisiert, durchsuchbar, für immer abrufbar.",
-              },
-            ].map((s) => (
-              <div key={s.title} className="text-center">
-                <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <span className="text-3xl">{s.icon}</span>
+          <div className="text-center mb-16">
+            <span className="text-blue-600 text-sm font-semibold uppercase tracking-widest">Einfach & schnell</span>
+            <h2 className="text-4xl font-bold text-gray-900 mt-2">In 3 Schritten zum digitalen Bon</h2>
+            <p className="text-gray-500 mt-4 max-w-xl mx-auto">Kein Aufwand, keine App-Öffnung nötig – einfach antippen und fertig.</p>
+          </div>
+          <div className="relative">
+            {/* Connecting line */}
+            <div className="hidden md:block absolute top-12 left-[16.66%] right-[16.66%] h-0.5 bg-gradient-to-r from-blue-200 via-blue-400 to-blue-200" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+              {[
+                {
+                  step: "01",
+                  icon: "🏪",
+                  title: "Kassenbon wird erstellt",
+                  desc: "Der Händler erstellt den Bon digital im Tappr-Terminal – QR-Code und NFC werden automatisch generiert.",
+                  color: "bg-blue-50 border-blue-200",
+                  iconBg: "bg-blue-100",
+                },
+                {
+                  step: "02",
+                  icon: "📲",
+                  title: "Handy antippen oder scannen",
+                  desc: "Du hältst dein Smartphone kurz ans NFC-Terminal oder scannst den QR-Code – dauert eine Sekunde.",
+                  color: "bg-purple-50 border-purple-200",
+                  iconBg: "bg-purple-100",
+                },
+                {
+                  step: "03",
+                  icon: "✅",
+                  title: "Bon landet in der App",
+                  desc: "Sofort gespeichert, kategorisiert und in deiner Ausgaben-Übersicht sichtbar. Kein Papier, kein Chaos.",
+                  color: "bg-green-50 border-green-200",
+                  iconBg: "bg-green-100",
+                },
+              ].map((s) => (
+                <div key={s.step} className="flex flex-col items-center text-center">
+                  <div className={`relative w-24 h-24 rounded-2xl flex items-center justify-center border-2 mb-6 ${s.color}`}>
+                    <span className="text-4xl">{s.icon}</span>
+                    <span className="absolute -top-3 -right-3 w-7 h-7 bg-blue-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                      {s.step}
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-lg text-gray-900 mb-2">{s.title}</h3>
+                  <p className="text-gray-500 text-sm leading-relaxed">{s.desc}</p>
                 </div>
-                <h3 className="font-semibold text-lg mb-2">{s.title}</h3>
-                <p className="text-gray-600 text-sm">{s.desc}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* Features */}
-      <section className="px-6 py-16 bg-gray-50">
+      <section id="features" className="bg-gray-950 px-6 py-24">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12">Features</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="text-center mb-16">
+            <span className="text-blue-400 text-sm font-semibold uppercase tracking-widest">Features</span>
+            <h2 className="text-4xl font-bold text-white mt-2">Alles was du brauchst</h2>
+            <p className="text-gray-400 mt-4 max-w-xl mx-auto">Tappr ist mehr als nur ein Kassenbon-Speicher – es ist dein digitales Ausgaben-Cockpit.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { icon: "🧾", title: "Digitale Kassenbons", desc: "Alle Bons werden sicher in der Cloud gespeichert – für immer abrufbar." },
-              { icon: "📈", title: "Ausgaben-Analyse", desc: "Wofür gibst du dein Geld aus? Kategorisiert und visualisiert." },
-              { icon: "🔍", title: "Schnelle Suche", desc: "Finde jeden Bon in Sekunden – nach Laden, Datum oder Produktname." },
-              { icon: "🏷️", title: "Automatische Kategorien", desc: "Lebensmittel, Drogerie, Technik – Tappr erkennt die Kategorie automatisch." },
-              { icon: "📲", title: "NFC & QR-Transfer", desc: "An der Kasse einfach antippen oder QR-Code scannen – fertig." },
-              { icon: "🌱", title: "Nachhaltiger", desc: "Kein Thermopapier mehr. Gut für dich, gut für die Umwelt." },
+              {
+                icon: "🧾",
+                title: "Digitale Kassenbons",
+                desc: "Alle Bons werden sicher gespeichert – für immer abrufbar, nie wieder verloren.",
+                gradient: "from-blue-500/10 to-blue-500/5",
+                border: "border-blue-500/20",
+                iconBg: "bg-blue-500/20",
+              },
+              {
+                icon: "📊",
+                title: "Ausgaben-Analyse",
+                desc: "Wofür gibst du dein Geld aus? Kategorisiert, visualisiert, auf einen Blick.",
+                gradient: "from-purple-500/10 to-purple-500/5",
+                border: "border-purple-500/20",
+                iconBg: "bg-purple-500/20",
+              },
+              {
+                icon: "📲",
+                title: "NFC & QR-Transfer",
+                desc: "An der Kasse einfach antippen oder QR-Code scannen – der Bon ist sofort da.",
+                gradient: "from-cyan-500/10 to-cyan-500/5",
+                border: "border-cyan-500/20",
+                iconBg: "bg-cyan-500/20",
+              },
+              {
+                icon: "🔍",
+                title: "Schnelle Suche",
+                desc: "Finde jeden Bon in Sekunden – nach Laden, Datum oder Produktname.",
+                gradient: "from-orange-500/10 to-orange-500/5",
+                border: "border-orange-500/20",
+                iconBg: "bg-orange-500/20",
+              },
+              {
+                icon: "🏷️",
+                title: "Auto-Kategorisierung",
+                desc: "Lebensmittel, Drogerie, Technik – Tappr erkennt die Kategorie automatisch.",
+                gradient: "from-green-500/10 to-green-500/5",
+                border: "border-green-500/20",
+                iconBg: "bg-green-500/20",
+              },
+              {
+                icon: "🌱",
+                title: "Nachhaltig",
+                desc: "Kein Thermopapier mehr. Weniger Abfall, weniger Chemie. Gut für alle.",
+                gradient: "from-emerald-500/10 to-emerald-500/5",
+                border: "border-emerald-500/20",
+                iconBg: "bg-emerald-500/20",
+              },
             ].map((f) => (
-              <div key={f.title} className="flex gap-4 bg-white rounded-xl p-5 border border-gray-200">
-                <span className="text-2xl">{f.icon}</span>
-                <div>
-                  <h3 className="font-semibold mb-1">{f.title}</h3>
-                  <p className="text-gray-600 text-sm">{f.desc}</p>
+              <div
+                key={f.title}
+                className={`relative rounded-2xl border p-6 bg-gradient-to-br ${f.gradient} ${f.border} hover:scale-105 transition-transform duration-200`}
+              >
+                <div className={`w-12 h-12 ${f.iconBg} rounded-xl flex items-center justify-center mb-4`}>
+                  <span className="text-2xl">{f.icon}</span>
                 </div>
+                <h3 className="font-bold text-white text-lg mb-2">{f.title}</h3>
+                <p className="text-gray-400 text-sm leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
@@ -66,17 +135,17 @@ export default function HomePage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-blue-600 px-6 py-16 text-center text-white">
-        <h2 className="text-3xl font-bold mb-4">Bereit loszulegen?</h2>
-        <p className="text-blue-100 mb-8 text-lg">
-          Probiere die Demo direkt im Browser aus – keine Installation nötig.
+      <section className="bg-gradient-to-br from-blue-600 to-blue-800 px-6 py-20 text-center text-white">
+        <h2 className="text-4xl font-bold mb-4">Bereit für papierlose Bons?</h2>
+        <p className="text-blue-100 mb-10 text-lg max-w-xl mx-auto">
+          Probiere Tappr kostenlos aus – keine Kreditkarte, keine Installation nötig.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
             href="/dashboard"
             className="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-blue-50 transition-colors inline-block"
           >
-            Demo starten →
+            App ausprobieren →
           </Link>
           <Link
             href="/register"
@@ -87,8 +156,21 @@ export default function HomePage() {
         </div>
       </section>
 
-      <footer className="bg-white border-t border-gray-200 px-6 py-6 text-center text-sm text-gray-500">
-        © 2026 Tappr – Digitale Kassenbons
+      <footer className="bg-gray-950 border-t border-gray-800 px-6 py-8">
+        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-xs">T</span>
+            </div>
+            <span className="font-bold text-white">Tappr</span>
+          </div>
+          <p className="text-gray-500 text-sm">© 2026 Tappr – Digitale Kassenbons</p>
+          <div className="flex gap-6 text-sm text-gray-500">
+            <Link href="/pricing" className="hover:text-white transition-colors">Preise</Link>
+            <Link href="/login" className="hover:text-white transition-colors">Anmelden</Link>
+            <Link href="/register" className="hover:text-white transition-colors">Registrieren</Link>
+          </div>
+        </div>
       </footer>
     </>
   );

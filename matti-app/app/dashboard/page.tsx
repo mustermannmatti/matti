@@ -129,7 +129,7 @@ export default function DashboardPage() {
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xs">M</span>
+              <span className="text-white font-bold text-xs">T</span>
             </div>
             <span className="font-bold text-lg">Tappr</span>
           </Link>

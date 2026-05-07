@@ -27,6 +27,101 @@ const transitionVariants = {
   },
 };
 
+function DashboardMockup() {
+  const receipts = [
+    { store: "REWE Markt Frankfurt", amount: "34,87 €", icon: "🛒", cat: "Lebensmittel", date: "03.05.2026", color: "bg-green-100" },
+    { store: "dm-drogerie markt", amount: "18,45 €", icon: "🧴", cat: "Drogerie", date: "02.05.2026", color: "bg-pink-100" },
+    { store: "EDEKA Aktiv Markt", amount: "52,10 €", icon: "🛒", cat: "Lebensmittel", date: "30.04.2026", color: "bg-green-100" },
+    { store: "MediaMarkt", amount: "129,00 €", icon: "💻", cat: "Technik", date: "28.04.2026", color: "bg-blue-100" },
+  ];
+  const categories = [
+    { name: "Lebensmittel", pct: 72, color: "bg-green-400", amount: "87,0 €" },
+    { name: "Technik", pct: 50, color: "bg-blue-400", amount: "129,0 €" },
+    { name: "Drogerie", pct: 28, color: "bg-pink-400", amount: "18,5 €" },
+  ];
+  return (
+    <div className="text-sm">
+      {/* Nav */}
+      <div className="flex items-center justify-between mb-5 pb-4 border-b border-gray-100">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-xs">T</span>
+          </div>
+          <span className="font-bold text-gray-900">Tappr</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-lg">Händler-Terminal</span>
+          <div className="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center">
+            <span className="text-blue-700 font-bold text-xs">M</span>
+          </div>
+        </div>
+      </div>
+      {/* Stats */}
+      <div className="grid grid-cols-4 gap-3 mb-5">
+        {[
+          { label: "Gesamt ausgegeben", value: "234,42 €", color: "text-gray-900" },
+          { label: "Diesen Monat", value: "87,21 €", color: "text-blue-600" },
+          { label: "Kassenbons", value: "4", color: "text-gray-900" },
+          { label: "Läden", value: "3", color: "text-gray-900" },
+        ].map((s) => (
+          <div key={s.label} className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+            <p className="text-xs text-gray-400 mb-1">{s.label}</p>
+            <p className={`text-lg font-bold ${s.color}`}>{s.value}</p>
+          </div>
+        ))}
+      </div>
+      {/* Main content */}
+      <div className="grid grid-cols-3 gap-4">
+        {/* Receipt list */}
+        <div className="col-span-2 bg-white rounded-xl border border-gray-100">
+          <div className="p-3 border-b border-gray-100">
+            <p className="font-semibold text-gray-800 text-xs">Kassenbons</p>
+          </div>
+          <ul className="divide-y divide-gray-50">
+            {receipts.map((r) => (
+              <li key={r.store} className="flex items-center gap-3 px-3 py-2.5">
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${r.color}`}>
+                  <span className="text-base">{r.icon}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-gray-900 text-xs truncate">{r.store}</p>
+                  <p className="text-xs text-gray-400">{r.date}</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-semibold text-gray-900 text-xs">{r.amount}</p>
+                  <span className="text-xs text-gray-400">{r.cat}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+        {/* Category sidebar */}
+        <div className="bg-white rounded-xl border border-gray-100 p-3">
+          <p className="font-semibold text-gray-800 text-xs mb-3">Nach Kategorie</p>
+          <div className="space-y-3">
+            {categories.map((c) => (
+              <div key={c.name}>
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="text-gray-600">{c.name}</span>
+                  <span className="font-medium">{c.amount}</span>
+                </div>
+                <div className="h-1.5 bg-gray-100 rounded-full">
+                  <div className={`h-1.5 rounded-full ${c.color}`} style={{ width: `${c.pct}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 bg-blue-600 rounded-xl p-3 text-white">
+            <p className="text-lg mb-1">📲</p>
+            <p className="font-semibold text-xs mb-1">Bon einlösen</p>
+            <p className="text-blue-100 text-xs">QR-Code scannen</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function HeroSection() {
   return (
     <>
@@ -145,26 +240,13 @@ export function HeroSection() {
                 ...transitionVariants,
               }}
             >
-              <div className="relative -mr-56 mt-8 overflow-hidden px-2 sm:mr-0 sm:mt-12 md:mt-20">
+              <div className="relative mt-8 overflow-hidden px-4 sm:mt-12 md:mt-20">
                 <div
                   aria-hidden
                   className="bg-gradient-to-b to-background absolute inset-0 z-10 from-transparent from-35%"
                 />
-                <div className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border p-4 shadow-lg shadow-zinc-950/15 ring-1">
-                  <img
-                    className="bg-background aspect-15/8 relative hidden rounded-2xl dark:block"
-                    src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=2700&q=75"
-                    alt="app screen dark"
-                    width="2700"
-                    height="1440"
-                  />
-                  <img
-                    className="z-2 border-border/25 aspect-15/8 relative rounded-2xl border dark:hidden"
-                    src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=2700&q=75"
-                    alt="app screen light"
-                    width="2700"
-                    height="1440"
-                  />
+                <div className="relative mx-auto max-w-4xl overflow-hidden rounded-2xl border bg-white shadow-2xl shadow-zinc-950/20 p-6">
+                  <DashboardMockup />
                 </div>
               </div>
             </AnimatedGroup>
