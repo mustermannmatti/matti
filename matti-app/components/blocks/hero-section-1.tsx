@@ -4,8 +4,10 @@ import React from "react";
 import Link from "next/link";
 import { ArrowRight, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { ContainerScroll } from "@/components/ui/container-scroll-animation";
+import { AnimatedHeadline } from "@/components/ui/animated-hero";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 32, filter: "blur(8px)" },
@@ -30,7 +32,7 @@ function DashboardMockup() {
     { name: "Drogerie", pct: 28, color: "bg-pink-400", amount: "18,5 €" },
   ];
   return (
-    <div className="text-sm">
+    <div className="text-sm h-full overflow-auto">
       <div className="flex items-center justify-between mb-5 pb-4 border-b border-gray-100">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -52,7 +54,7 @@ function DashboardMockup() {
           { label: "Kassenbons", value: "4", color: "text-gray-900" },
           { label: "Läden", value: "3", color: "text-gray-900" },
         ].map((s) => (
-          <div key={s.label} className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+          <div key={s.label} className="bg-white rounded-xl p-3 border border-gray-100">
             <p className="text-xs text-gray-400 mb-1">{s.label}</p>
             <p className={`text-lg font-bold ${s.color}`}>{s.value}</p>
           </div>
@@ -108,14 +110,11 @@ function DashboardMockup() {
 }
 
 export function HeroSection() {
-  const { scrollY } = useScroll();
-  const mockupY = useTransform(scrollY, [0, 400], [0, 60]);
-
   return (
     <>
       <HeroHeader />
       <main className="overflow-hidden">
-        {/* Background: subtle grid + blue glow, no globe */}
+        {/* Background */}
         <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
           <div className="absolute inset-0 bg-[linear-gradient(to_bottom,#eff6ff_0%,#ffffff_60%)]" />
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#e0e7ff22_1px,transparent_1px),linear-gradient(to_bottom,#e0e7ff22_1px,transparent_1px)] bg-[size:60px_60px]" />
@@ -130,7 +129,8 @@ export function HeroSection() {
               <div className="text-center">
 
                 {/* Free badge */}
-                <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible"
+                <motion.div
+                  custom={0} variants={fadeUp} initial="hidden" animate="visible"
                   className="inline-flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 rounded-full px-4 py-1.5 text-sm font-medium mb-4"
                 >
                   <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
@@ -138,9 +138,7 @@ export function HeroSection() {
                 </motion.div>
 
                 {/* Announcement badge */}
-                <motion.div custom={1} variants={fadeUp} initial="hidden" animate="visible"
-                  className="mb-8"
-                >
+                <motion.div custom={1} variants={fadeUp} initial="hidden" animate="visible" className="mb-8">
                   <Link
                     href="/dashboard"
                     className="group mx-auto flex w-fit items-center gap-3 rounded-full border border-blue-100 bg-white px-4 py-1.5 shadow-sm shadow-blue-100 transition-all hover:shadow-md hover:border-blue-300"
@@ -157,21 +155,19 @@ export function HeroSection() {
                   </Link>
                 </motion.div>
 
-                {/* Headline */}
+                {/* Animated headline */}
                 <motion.h1
                   custom={2} variants={fadeUp} initial="hidden" animate="visible"
-                  className="max-w-4xl mx-auto text-5xl md:text-6xl xl:text-7xl font-bold text-gray-900 leading-tight text-balance"
+                  className="max-w-4xl mx-auto text-5xl md:text-6xl xl:text-7xl font-bold text-gray-900 leading-tight"
                 >
-                  Deine Kassenbons.{" "}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">
-                    Digital. Sicher.
-                  </span>{" "}
-                  Immer dabei.
+                  Deine Kassenbons.
+                  <br />
+                  <AnimatedHeadline />
                 </motion.h1>
 
                 <motion.p
                   custom={3} variants={fadeUp} initial="hidden" animate="visible"
-                  className="mx-auto mt-6 max-w-2xl text-lg text-gray-500 text-balance"
+                  className="mx-auto mt-8 max-w-2xl text-lg text-gray-500 text-balance"
                 >
                   Tappr speichert alle deine Kassenbons automatisch – per NFC oder QR-Code an der Kasse.
                   Kein Papier, keine Unordnung, alle Ausgaben auf einen Blick.
@@ -183,14 +179,10 @@ export function HeroSection() {
                   className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3"
                 >
                   <Button asChild size="lg" className="rounded-xl px-8 text-base bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200">
-                    <Link href="/dashboard">
-                      Kostenlos starten →
-                    </Link>
+                    <Link href="/dashboard">Kostenlos starten →</Link>
                   </Button>
                   <Button asChild size="lg" variant="outline" className="rounded-xl px-8 text-base border-gray-200 hover:border-blue-200">
-                    <Link href="/register">
-                      Als Händler registrieren
-                    </Link>
+                    <Link href="/register">Als Händler registrieren</Link>
                   </Button>
                 </motion.div>
 
@@ -199,35 +191,39 @@ export function HeroSection() {
                   custom={5} variants={fadeUp} initial="hidden" animate="visible"
                   className="mt-6 flex items-center justify-center gap-6 text-sm text-gray-400"
                 >
-                  <span className="flex items-center gap-1.5"><span className="text-green-500">✓</span> Kein Kreditkarte nötig</span>
+                  <span className="flex items-center gap-1.5"><span className="text-green-500">✓</span> Keine Kreditkarte nötig</span>
                   <span className="flex items-center gap-1.5"><span className="text-green-500">✓</span> DSGVO-konform</span>
                   <span className="flex items-center gap-1.5"><span className="text-green-500">✓</span> Kostenlos für Kunden</span>
                 </motion.div>
               </div>
             </div>
-
-            {/* Dashboard mockup with parallax */}
-            <motion.div
-              style={{ y: mockupY }}
-              initial={{ opacity: 0, y: 60 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              className="relative mt-16 px-4 md:px-8"
-            >
-              <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-white to-transparent z-10" />
-              <div className="relative mx-auto max-w-4xl overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl shadow-blue-950/10 p-6">
-                <DashboardMockup />
-              </div>
-            </motion.div>
           </div>
         </section>
 
-        {/* CTA below dashboard */}
-        <section className="pt-4 pb-20 text-center px-6">
+        {/* ContainerScroll: 3D dashboard reveal on scroll */}
+        <ContainerScroll
+          titleComponent={
+            <div className="mb-6">
+              <p className="text-blue-600 text-sm font-semibold uppercase tracking-widest mb-2">Live-Vorschau</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+                Alles auf einen Blick
+              </h2>
+              <p className="text-gray-500 mt-2 max-w-lg mx-auto text-base">
+                Deine Ausgaben, deine Kassenbons – übersichtlich, schnell, immer griffbereit.
+              </p>
+            </div>
+          }
+        >
+          <DashboardMockup />
+        </ContainerScroll>
+
+        {/* Stats + CTA below scroll section */}
+        <section className="pb-20 text-center px-6 -mt-20">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.2, duration: 0.6 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
             className="max-w-xl mx-auto"
           >
             <p className="text-gray-500 mb-6 text-base">
@@ -240,7 +236,7 @@ export function HeroSection() {
               <span>App ausprobieren</span>
               <ArrowRight className="size-5" />
             </Link>
-            <div className="mt-6 flex items-center justify-center gap-8 text-sm text-gray-400">
+            <div className="mt-8 flex items-center justify-center gap-8 text-sm text-gray-400">
               {[
                 { value: "10.000+", label: "Nutzer" },
                 { value: "50+", label: "Händler" },
@@ -315,10 +311,7 @@ const HeroHeader = () => {
               <ul className="flex gap-8 text-sm">
                 {menuItems.map((item) => (
                   <li key={item.name}>
-                    <Link
-                      href={item.href}
-                      className="text-gray-500 hover:text-gray-900 block duration-150 font-medium"
-                    >
+                    <Link href={item.href} className="text-gray-500 hover:text-gray-900 block duration-150 font-medium">
                       {item.name}
                     </Link>
                   </li>
