@@ -27,6 +27,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [user, setUser] = useState<User | null>(null);
+  const [isMerchant, setIsMerchant] = useState(false);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("Alle");
@@ -38,11 +39,11 @@ export default function DashboardPage() {
       Icon: <QrCode className="w-4 h-4" />,
       onClick: () => router.push("/scan"),
     },
-    {
+    ...(isMerchant ? [{
       label: "Händler-Terminal",
       Icon: <Store className="w-4 h-4" />,
       onClick: () => router.push("/pos"),
-    },
+    }] : []),
     {
       label: "Alle Kassenbons",
       Icon: <Receipt className="w-4 h-4" />,
@@ -58,9 +59,16 @@ export default function DashboardPage() {
           localStorage.setItem("matti_seeded", "1");
         }
         setSeeded(true);
-        const usersRes = await fetch("/api/users");
+        const [usersRes, sessionRes] = await Promise.all([
+          fetch("/api/users"),
+          fetch("/api/auth/session"),
+        ]);
         if (!usersRes.ok) throw new Error("Failed to load users");
         const users = await usersRes.json();
+        if (sessionRes.ok) {
+          const session = await sessionRes.json();
+          setIsMerchant(session?.user?.role === "merchant");
+        }
         if (users.length > 0) {
           setUser(users[0]);
           const receiptsRes = await fetch(`/api/receipts?consumerId=${users[0].id}`);
@@ -156,12 +164,14 @@ export default function DashboardPage() {
             <span className="font-bold text-lg">Tappr</span>
           </Link>
           <div className="flex items-center gap-3">
-            <Link
-              href="/pos"
-              className="text-sm text-gray-600 hover:text-gray-900 bg-gray-100 px-3 py-1.5 rounded-lg"
-            >
-              Händler-Terminal
-            </Link>
+            {isMerchant && (
+              <Link
+                href="/pos"
+                className="text-sm text-gray-600 hover:text-gray-900 bg-gray-100 px-3 py-1.5 rounded-lg"
+              >
+                Händler-Terminal
+              </Link>
+            )}
             {user && (
               <div className="flex items-center gap-2 text-sm text-gray-700">
                 <div className="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center">
