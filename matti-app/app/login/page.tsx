@@ -10,6 +10,7 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/pos";
+  const registered = searchParams.get("registered") === "1";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -44,7 +45,7 @@ function LoginForm() {
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 justify-center">
             <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold">M</span>
+              <span className="text-white font-bold">T</span>
             </div>
             <span className="font-bold text-2xl text-gray-900">Tappr</span>
           </Link>
@@ -53,6 +54,12 @@ function LoginForm() {
 
         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
           <h1 className="text-xl font-bold text-gray-900 mb-6">Anmelden</h1>
+
+          {registered && (
+            <div className="bg-green-50 border border-green-200 text-green-700 rounded-xl px-4 py-3 text-sm mb-4">
+              Konto erfolgreich erstellt! Jetzt anmelden.
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>

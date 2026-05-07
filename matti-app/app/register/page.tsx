@@ -66,7 +66,7 @@ export default function RegisterPage() {
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 justify-center">
             <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold">M</span>
+              <span className="text-white font-bold">T</span>
             </div>
             <span className="font-bold text-2xl text-gray-900">Tappr</span>
           </Link>
