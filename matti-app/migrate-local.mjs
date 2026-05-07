@@ -31,6 +31,39 @@ const steps = [
     name: "Create unique index on ApiKey.key",
     sql: `CREATE UNIQUE INDEX IF NOT EXISTS "ApiKey_key_key" ON "ApiKey"("key")`,
   },
+  {
+    name: "Add plan and stripeCustomerId to User",
+    sql: `ALTER TABLE "User" ADD COLUMN "plan" TEXT NOT NULL DEFAULT 'free'`,
+  },
+  {
+    name: "Add stripeCustomerId to User",
+    sql: `ALTER TABLE "User" ADD COLUMN "stripeCustomerId" TEXT`,
+  },
+  {
+    name: "Create Subscription table",
+    sql: `CREATE TABLE IF NOT EXISTS "Subscription" (
+      "id" TEXT NOT NULL PRIMARY KEY,
+      "userId" TEXT NOT NULL,
+      "stripeSubscriptionId" TEXT,
+      "stripeSessionId" TEXT,
+      "plan" TEXT NOT NULL,
+      "status" TEXT NOT NULL DEFAULT 'active',
+      "currentPeriodEnd" TEXT,
+      "createdAt" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY ("userId") REFERENCES "User"("id")
+    )`,
+  },
+  {
+    name: "Create unique index on Subscription.stripeSubscriptionId",
+    sql: `CREATE UNIQUE INDEX IF NOT EXISTS "Subscription_stripeSubscriptionId_key" ON "Subscription"("stripeSubscriptionId") WHERE "stripeSubscriptionId" IS NOT NULL`,
+  },
+  {
+    name: "Create Settings table",
+    sql: `CREATE TABLE IF NOT EXISTS "Settings" (
+      "key" TEXT NOT NULL PRIMARY KEY,
+      "value" TEXT NOT NULL
+    )`,
+  },
 ];
 
 for (const step of steps) {
