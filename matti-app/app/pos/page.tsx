@@ -5,6 +5,7 @@ import Link from "next/link";
 import QRCode from "react-qr-code";
 import { signOut, useSession } from "next-auth/react";
 import { formatCurrency } from "@/lib/utils";
+import { Plus, Trash2, LogOut, Zap, Key, ShoppingCart, ChevronRight, Copy, Check, X } from "lucide-react";
 
 type Store = { id: string; name: string; address: string };
 type Item = { name: string; quantity: number; price: number; total: number };
@@ -17,21 +18,17 @@ type ApiKey = {
   lastUsedAt: string | null;
 };
 
-const CATEGORIES = [
-  "Lebensmittel",
-  "Drogerie",
-  "Technik",
-  "Restaurant",
-  "Kleidung",
-  "Sonstiges",
-];
+const CATEGORIES = ["Lebensmittel", "Drogerie", "Technik", "Restaurant", "Kleidung", "Sonstiges"];
+const CATEGORY_ICONS: Record<string, string> = {
+  Lebensmittel: "🛒", Drogerie: "🧴", Technik: "💻", Restaurant: "🍽️", Kleidung: "👕", Sonstiges: "📦",
+};
 
 const QUICK_ITEMS = [
   { name: "Bio Vollmilch 1L", price: 1.49 },
   { name: "Mehrkornbrot 750g", price: 2.89 },
   { name: "Hähnchenbrust 400g", price: 5.99 },
   { name: "Tomaten 500g", price: 1.79 },
-  { name: "Nudeln Barilla 500g", price: 1.49 },
+  { name: "Nudeln 500g", price: 1.49 },
   { name: "Olivenöl 500ml", price: 5.99 },
 ];
 
@@ -45,8 +42,6 @@ function formatRelative(dateStr: string | null) {
   if (hrs < 24) return `vor ${hrs} Std.`;
   return `vor ${Math.floor(hrs / 24)} Tagen`;
 }
-
-// ─── API Keys Panel ─────────────────────────────────────────────────────────
 
 function ApiKeysPanel() {
   const [keys, setKeys] = useState<ApiKey[]>([]);
@@ -99,114 +94,94 @@ function ApiKeysPanel() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      {/* Docs box */}
-      <div className="bg-gray-800 rounded-xl p-5 border border-gray-700">
-        <h2 className="font-semibold text-white mb-1">POS-Integration via API</h2>
-        <p className="text-gray-400 text-sm mb-4">
-          Sende nach jeder Transaktion einen HTTP-Request an Tappr. Wir erstellen den digitalen
-          Kassenbon und geben dir eine QR-Code-URL zurück, die du auf dem Kundendisplay anzeigst.
-        </p>
-        <div className="bg-gray-900 rounded-lg p-4 text-xs font-mono text-gray-300 overflow-x-auto">
-          <p className="text-gray-500 mb-2"># Bon per API erstellen</p>
-          <p><span className="text-blue-400">POST</span> {origin}/api/v1/receipts</p>
-          <p><span className="text-gray-500">Authorization:</span> Bearer {`<API_KEY>`}</p>
-          <p><span className="text-gray-500">Content-Type:</span> application/json</p>
+    <div className="max-w-3xl mx-auto space-y-5">
+      <div className="rounded-2xl border border-slate-700/60 bg-slate-800/50 backdrop-blur p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-9 h-9 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
+            <Zap className="w-4 h-4 text-blue-400" />
+          </div>
+          <div>
+            <h2 className="font-semibold text-white">POS-Integration via API</h2>
+            <p className="text-slate-400 text-xs">HTTP-Request nach jeder Transaktion</p>
+          </div>
+        </div>
+        <div className="bg-slate-950 rounded-xl p-4 text-xs font-mono text-slate-300 overflow-x-auto border border-slate-700/50">
+          <p className="text-slate-500 mb-1"># Bon per API erstellen</p>
+          <p><span className="text-blue-400">POST</span> <span className="text-slate-300">{origin}/api/v1/receipts</span></p>
+          <p><span className="text-slate-500">Authorization:</span> Bearer &lt;API_KEY&gt;</p>
           <br />
-          <p className="text-gray-500">{"{"}</p>
-          <p className="pl-4">{`"items": [`}</p>
-          <p className="pl-8">{`{ "name": "Milch 1L", "quantity": 2, "price": 1.29 },`}</p>
-          <p className="pl-8">{`{ "name": "Brot", "quantity": 1, "price": 2.49 }`}</p>
-          <p className="pl-4">{`],`}</p>
-          <p className="pl-4">{`"category": "Lebensmittel",`}</p>
-          <p className="pl-4">{`"transactionId": "POS-12345"`}</p>
+          <p className="text-slate-500">{"{"}</p>
+          <p className="pl-4">{`"items": [{ "name": "Milch 1L", "quantity": 2, "price": 1.29 }],`}</p>
+          <p className="pl-4">{`"category": "Lebensmittel"`}</p>
           <p>{"}"}</p>
           <br />
-          <p className="text-gray-500"># Antwort</p>
-          <p className="text-gray-500">{"{"}</p>
-          <p className="pl-4 text-green-400">{`"claimUrl": "${origin}/claim/<token>",`}</p>
-          <p className="pl-4 text-green-400">{`"qrDataUrl": "data:image/png;base64,...",`}</p>
-          <p className="pl-4">{`"total": 5.07, "subtotal": 4.07, "tax": 0.77`}</p>
-          <p className="text-gray-500">{"}"}</p>
+          <p className="text-green-400/80">{`→ { "claimUrl": "${origin}/claim/<token>", "total": 3.07 }`}</p>
         </div>
-        <p className="text-gray-500 text-xs mt-3">
-          <span className="text-yellow-400">taxRate</span> optional (Standard: 0.19) ·{" "}
-          <span className="text-yellow-400">transactionId</span> optional, deine interne Transaktions-ID
-        </p>
       </div>
 
-      {/* Create key */}
-      <div className="bg-gray-800 rounded-xl p-5 border border-gray-700">
-        <h3 className="font-semibold text-white mb-3">Neuen API-Schlüssel erstellen</h3>
+      <div className="rounded-2xl border border-slate-700/60 bg-slate-800/50 backdrop-blur p-6">
+        <h3 className="font-semibold text-white mb-4">Neuen API-Schlüssel erstellen</h3>
         <div className="flex gap-2">
           <input
             type="text"
-            placeholder="Name z.B. Kasse 1, NCR Terminal"
+            placeholder="z.B. Kasse 1, NCR Terminal"
             value={newKeyName}
             onChange={(e) => setNewKeyName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && createKey()}
-            className="flex-1 bg-gray-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
+            className="flex-1 bg-slate-900 text-white rounded-xl px-4 py-2.5 text-sm border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50 placeholder-slate-500"
           />
           <button
             onClick={createKey}
             disabled={creating || !newKeyName.trim()}
-            className="bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            className="bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center gap-2"
           >
+            <Plus className="w-4 h-4" />
             {creating ? "…" : "Erstellen"}
           </button>
         </div>
       </div>
 
-      {/* Keys list */}
-      <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
-        <div className="p-4 border-b border-gray-700">
-          <h3 className="font-semibold text-white">API-Schlüssel ({keys.length})</h3>
+      <div className="rounded-2xl border border-slate-700/60 bg-slate-800/50 backdrop-blur overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-700/60 flex items-center gap-2">
+          <Key className="w-4 h-4 text-slate-400" />
+          <h3 className="font-semibold text-white">API-Schlüssel <span className="text-slate-500 font-normal">({keys.length})</span></h3>
         </div>
         {loading ? (
-          <div className="p-8 text-center text-gray-500 text-sm">Laden…</div>
+          <div className="p-10 text-center text-slate-500 text-sm">Laden…</div>
         ) : keys.length === 0 ? (
-          <div className="p-8 text-center text-gray-500 text-sm">
-            Noch keine Schlüssel. Erstelle deinen ersten oben.
+          <div className="p-10 text-center">
+            <p className="text-slate-500 text-sm">Noch keine Schlüssel. Erstelle deinen ersten oben.</p>
           </div>
         ) : (
-          <ul className="divide-y divide-gray-700">
+          <ul className="divide-y divide-slate-700/50">
             {keys.map((k) => (
-              <li key={k.id} className="p-4">
-                <div className="flex items-start justify-between gap-3">
+              <li key={k.id} className="px-6 py-4 hover:bg-slate-700/20 transition-colors">
+                <div className="flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-1.5">
                       <span className="font-medium text-white text-sm">{k.name}</span>
-                      <span className={`text-xs px-1.5 py-0.5 rounded-full ${k.active ? "bg-green-900/50 text-green-400" : "bg-gray-700 text-gray-500"}`}>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${k.active ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20" : "bg-slate-700 text-slate-500"}`}>
                         {k.active ? "Aktiv" : "Deaktiviert"}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <code className="text-xs text-gray-400 font-mono bg-gray-900 px-2 py-1 rounded truncate max-w-[260px]">
+                      <code className="text-xs text-slate-400 font-mono bg-slate-900 px-2.5 py-1 rounded-lg truncate max-w-[240px] border border-slate-700/50">
                         {k.key}
                       </code>
-                      <button
-                        onClick={() => copyKey(k)}
-                        className="text-xs text-blue-400 hover:text-blue-300 flex-shrink-0"
-                      >
-                        {copiedId === k.id ? "✓ Kopiert" : "Kopieren"}
+                      <button onClick={() => copyKey(k)} className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors">
+                        {copiedId === k.id ? <><Check className="w-3 h-3" /> Kopiert</> : <><Copy className="w-3 h-3" /> Kopieren</>}
                       </button>
                     </div>
-                    <p className="text-xs text-gray-600 mt-1">
-                      Erstellt {formatRelative(k.createdAt)} · Zuletzt benutzt {formatRelative(k.lastUsedAt)}
+                    <p className="text-xs text-slate-600 mt-1.5">
+                      Erstellt {formatRelative(k.createdAt)} · Zuletzt {formatRelative(k.lastUsedAt)}
                     </p>
                   </div>
-                  <div className="flex gap-2 flex-shrink-0">
-                    <button
-                      onClick={() => toggleKey(k.id, k.active)}
-                      className="text-xs text-gray-400 hover:text-yellow-400 transition-colors"
-                    >
+                  <div className="flex gap-3 flex-shrink-0">
+                    <button onClick={() => toggleKey(k.id, k.active)} className="text-xs text-slate-400 hover:text-yellow-400 transition-colors">
                       {k.active ? "Deakt." : "Aktivieren"}
                     </button>
-                    <button
-                      onClick={() => deleteKey(k.id)}
-                      className="text-xs text-gray-400 hover:text-red-400 transition-colors"
-                    >
-                      Löschen
+                    <button onClick={() => deleteKey(k.id)} className="text-xs text-slate-400 hover:text-red-400 transition-colors">
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
@@ -218,8 +193,6 @@ function ApiKeysPanel() {
     </div>
   );
 }
-
-// ─── Main POS Page ───────────────────────────────────────────────────────────
 
 export default function POSPage() {
   const { data: session } = useSession();
@@ -293,49 +266,62 @@ export default function POSPage() {
   const claimUrl = typeof window !== "undefined" ? `${window.location.origin}/claim/${receipt?.token}` : "";
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <header className="border-b border-gray-700 px-6 py-4">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
+    <div className="min-h-screen bg-slate-950 text-white">
+
+      {/* Header */}
+      <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md sticky top-0 z-20">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2">
-              <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xs">T</span>
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-900/50">
+                <span className="text-white font-bold text-sm">T</span>
               </div>
             </Link>
-            <span className="text-gray-400">|</span>
-            <span className="font-semibold">Händler-Terminal</span>
+            <div className="h-5 w-px bg-slate-700" />
+            {selectedStore ? (
+              <div>
+                <p className="text-white font-semibold text-sm leading-none">{selectedStore.name}</p>
+                <p className="text-slate-500 text-xs mt-0.5">Händler-Terminal</p>
+              </div>
+            ) : (
+              <span className="text-slate-300 font-semibold text-sm">Händler-Terminal</span>
+            )}
           </div>
 
-          {/* Tabs */}
-          <div className="flex items-center gap-1 bg-gray-800 rounded-lg p-1">
-            <button
-              onClick={() => setTab("terminal")}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${tab === "terminal" ? "bg-gray-700 text-white" : "text-gray-400 hover:text-white"}`}
-            >
-              Terminal
-            </button>
-            <button
-              onClick={() => setTab("api")}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${tab === "api" ? "bg-gray-700 text-white" : "text-gray-400 hover:text-white"}`}
-            >
-              API-Schlüssel
-            </button>
+          <div className="flex items-center gap-1 bg-slate-800/80 border border-slate-700/60 rounded-xl p-1">
+            {[
+              { key: "terminal", label: "Terminal", icon: <ShoppingCart className="w-3.5 h-3.5" /> },
+              { key: "api", label: "API-Schlüssel", icon: <Key className="w-3.5 h-3.5" /> },
+            ].map((t) => (
+              <button
+                key={t.key}
+                onClick={() => setTab(t.key as "terminal" | "api")}
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all ${
+                  tab === t.key
+                    ? "bg-slate-700 text-white shadow-sm"
+                    : "text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                {t.icon}
+                {t.label}
+              </button>
+            ))}
           </div>
 
           <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="text-sm text-gray-400 hover:text-white">
-              Kunden-App →
-            </Link>
             {session?.user && (
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 text-sm text-gray-300">
-                  <div className="w-7 h-7 bg-blue-700 rounded-full flex items-center justify-center">
-                    <span className="text-xs font-semibold">{session.user.name?.charAt(0).toUpperCase()}</span>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-md">
+                    <span className="text-xs font-bold">{session.user.name?.charAt(0).toUpperCase()}</span>
                   </div>
-                  <span className="hidden sm:inline">{session.user.name}</span>
+                  <span className="hidden sm:inline text-sm text-slate-300 font-medium">{session.user.name}</span>
                 </div>
-                <button onClick={() => signOut({ callbackUrl: "/login" })} className="text-sm text-gray-400 hover:text-red-400 transition-colors">
-                  Abmelden
+                <button
+                  onClick={() => signOut({ callbackUrl: "/login" })}
+                  className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-red-400 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
                 </button>
               </div>
             )}
@@ -343,181 +329,219 @@ export default function POSPage() {
         </div>
       </header>
 
-      <div className="max-w-5xl mx-auto px-4 py-6">
+      <div className="max-w-6xl mx-auto px-4 py-6">
         {tab === "api" ? (
           <ApiKeysPanel />
         ) : receipt ? (
-          /* QR Code display */
-          <div className="flex flex-col items-center justify-center min-h-[70vh] gap-6">
-            <div className="bg-white rounded-3xl p-8 flex flex-col items-center gap-4 max-w-sm w-full">
-              <div className="text-center">
-                <p className="text-gray-800 font-bold text-2xl mb-1">{formatCurrency(receipt.total)}</p>
-                <p className="text-gray-500 text-sm">Jetzt Handy antippen oder QR scannen</p>
+          /* QR Display */
+          <div className="flex flex-col items-center justify-center min-h-[75vh] gap-6">
+            <div className="relative">
+              {/* Glow */}
+              <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full scale-150" />
+              <div className="relative bg-white rounded-3xl p-8 flex flex-col items-center gap-5 w-80 shadow-2xl">
+                <div className="text-center">
+                  <p className="text-slate-400 text-xs font-medium uppercase tracking-widest mb-1">Betrag</p>
+                  <p className="text-slate-900 font-black text-4xl">{formatCurrency(receipt.total)}</p>
+                </div>
+                <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 shadow-inner">
+                  <QRCode value={claimUrl} size={196} />
+                </div>
+                <div className="flex items-center gap-3 w-full text-slate-400 text-xs">
+                  <div className="h-px bg-slate-200 flex-1" />
+                  <span className="font-medium">oder NFC antippen</span>
+                  <div className="h-px bg-slate-200 flex-1" />
+                </div>
+                <div className="w-14 h-14 rounded-2xl border-2 border-slate-200 bg-slate-50 flex items-center justify-center">
+                  <span className="text-2xl">📲</span>
+                </div>
+                <p className="text-slate-400 text-xs font-mono">#{receipt.token.slice(0, 8).toUpperCase()}</p>
               </div>
-              <div className="p-4 bg-white rounded-2xl border-4 border-gray-900">
-                <QRCode value={claimUrl} size={200} />
-              </div>
-              <div className="flex items-center gap-2 text-gray-500 text-sm">
-                <div className="h-px bg-gray-200 flex-1"></div>
-                <span>oder NFC</span>
-                <div className="h-px bg-gray-200 flex-1"></div>
-              </div>
-              <div className="w-16 h-16 border-4 border-gray-900 rounded-full flex items-center justify-center">
-                <span className="text-3xl">📲</span>
-              </div>
-              <p className="text-gray-400 text-xs text-center">Bon-ID: {receipt.token.slice(0, 8)}…</p>
             </div>
+
             <div className="flex gap-3">
-              <button onClick={reset} className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors">
+              <button
+                onClick={reset}
+                className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-6 py-3 rounded-xl font-semibold transition-all text-sm"
+              >
+                <Plus className="w-4 h-4" />
                 Neuer Bon
               </button>
-              <Link href={`/claim/${receipt.token}`} className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-semibold transition-colors">
-                Demo: Bon einlösen
+              <Link
+                href={`/claim/${receipt.token}`}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-semibold transition-all text-sm"
+              >
+                Demo: Einlösen
+                <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Left: item input */}
-            <div>
-              {selectedStore && (
-                <div className="bg-gray-800 rounded-xl p-4 mb-4 flex items-center gap-3">
-                  <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-xs font-bold">🏪</span>
-                  </div>
-                  <div>
-                    <p className="text-white text-sm font-semibold">{selectedStore.name}</p>
-                    <p className="text-gray-400 text-xs">{selectedStore.address}</p>
-                  </div>
-                </div>
-              )}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
 
-              <div className="bg-gray-800 rounded-xl p-4 mb-4">
-                <label className="text-xs text-gray-400 mb-2 block">Kategorie</label>
+            {/* Left column: inputs (3/5) */}
+            <div className="lg:col-span-3 space-y-4">
+
+              {/* Category picker */}
+              <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Kategorie</p>
                 <div className="flex flex-wrap gap-2">
                   {CATEGORIES.map((c) => (
                     <button
                       key={c}
                       onClick={() => setCategory(c)}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${category === c ? "bg-blue-600 text-white" : "bg-gray-700 text-gray-300 hover:bg-gray-600"}`}
+                      className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium transition-all ${
+                        category === c
+                          ? "bg-blue-600 text-white shadow-lg shadow-blue-900/40"
+                          : "bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-700/50"
+                      }`}
                     >
+                      <span>{CATEGORY_ICONS[c]}</span>
                       {c}
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div className="bg-gray-800 rounded-xl p-4 mb-4">
-                <label className="text-xs text-gray-400 mb-2 block">Schnellauswahl</label>
-                <div className="grid grid-cols-2 gap-2">
+              {/* Quick items */}
+              <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Schnellauswahl</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {QUICK_ITEMS.map((qi) => (
                     <button
                       key={qi.name}
                       onClick={() => addQuickItem(qi)}
-                      className="bg-gray-700 hover:bg-gray-600 text-left px-3 py-2 rounded-lg text-sm transition-colors"
+                      className="group bg-slate-800 hover:bg-slate-700 border border-slate-700/50 hover:border-blue-500/40 text-left px-3.5 py-3 rounded-xl transition-all"
                     >
-                      <p className="text-white truncate">{qi.name}</p>
-                      <p className="text-gray-400 text-xs">{formatCurrency(qi.price)}</p>
+                      <p className="text-white text-sm font-medium truncate group-hover:text-blue-300 transition-colors">{qi.name}</p>
+                      <p className="text-slate-400 text-xs mt-0.5">{formatCurrency(qi.price)}</p>
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div className="bg-gray-800 rounded-xl p-4">
-                <label className="text-xs text-gray-400 mb-2 block">Artikel hinzufügen</label>
-                <div className="flex gap-2 mb-2">
+              {/* Manual item input */}
+              <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Artikel manuell</p>
+                <div className="flex gap-2">
                   <input
                     type="text"
                     placeholder="Artikelname"
                     value={newItem.name}
                     onChange={(e) => setNewItem((p) => ({ ...p, name: e.target.value }))}
-                    className="flex-1 bg-gray-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
                     onKeyDown={(e) => e.key === "Enter" && addItem()}
+                    className="flex-1 bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 placeholder-slate-500"
                   />
                   <input
                     type="number"
-                    placeholder="Menge"
+                    placeholder="Mge."
                     value={newItem.quantity}
                     min={1}
                     onChange={(e) => setNewItem((p) => ({ ...p, quantity: parseInt(e.target.value) || 1 }))}
-                    className="w-16 bg-gray-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-16 bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                   />
                   <input
                     type="number"
-                    placeholder="Preis"
+                    placeholder="€"
                     value={newItem.price}
                     step="0.01"
                     onChange={(e) => setNewItem((p) => ({ ...p, price: e.target.value }))}
-                    className="w-20 bg-gray-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     onKeyDown={(e) => e.key === "Enter" && addItem()}
+                    className="w-20 bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                   />
+                  <button
+                    onClick={addItem}
+                    disabled={!newItem.name || !newItem.price}
+                    className="bg-blue-600 hover:bg-blue-500 disabled:opacity-30 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-1.5"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
                 </div>
-                <button
-                  onClick={addItem}
-                  disabled={!newItem.name || !newItem.price}
-                  className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white py-2 rounded-lg text-sm font-medium transition-colors"
-                >
-                  + Hinzufügen
-                </button>
               </div>
             </div>
 
-            {/* Right: current receipt */}
-            <div>
-              <div className="bg-gray-800 rounded-xl overflow-hidden">
-                <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-                  <h2 className="font-semibold">Aktueller Bon</h2>
+            {/* Right column: receipt (2/5) */}
+            <div className="lg:col-span-2">
+              <div className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden sticky top-24">
+
+                {/* Receipt header */}
+                <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ShoppingCart className="w-4 h-4 text-slate-400" />
+                    <span className="font-semibold text-white text-sm">Aktueller Bon</span>
+                    {items.length > 0 && (
+                      <span className="bg-blue-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                        {items.length}
+                      </span>
+                    )}
+                  </div>
                   {items.length > 0 && (
-                    <button onClick={() => setItems([])} className="text-red-400 text-sm hover:text-red-300">
-                      Leeren
+                    <button onClick={() => setItems([])} className="flex items-center gap-1 text-xs text-slate-500 hover:text-red-400 transition-colors">
+                      <Trash2 className="w-3.5 h-3.5" /> Leeren
                     </button>
                   )}
                 </div>
 
+                {/* Items */}
                 {items.length === 0 ? (
-                  <div className="p-8 text-center text-gray-500">
-                    <p className="text-3xl mb-2">🛒</p>
-                    <p className="text-sm">Noch keine Artikel</p>
+                  <div className="py-16 text-center">
+                    <div className="w-16 h-16 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center mx-auto mb-3">
+                      <ShoppingCart className="w-7 h-7 text-slate-600" />
+                    </div>
+                    <p className="text-slate-500 text-sm">Noch keine Artikel</p>
+                    <p className="text-slate-600 text-xs mt-1">Wähle aus der Schnellauswahl oder füge manuell hinzu</p>
                   </div>
                 ) : (
-                  <ul className="divide-y divide-gray-700">
+                  <ul className="divide-y divide-slate-800/80 max-h-64 overflow-y-auto">
                     {items.map((item, idx) => (
-                      <li key={idx} className="flex items-center justify-between p-3">
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-white">{item.name}</p>
-                          <p className="text-xs text-gray-400">{item.quantity}× {formatCurrency(item.price)}</p>
+                      <li key={idx} className="flex items-center gap-3 px-5 py-3 hover:bg-slate-800/40 transition-colors group">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-white truncate">{item.name}</p>
+                          <p className="text-xs text-slate-500">{item.quantity}× {formatCurrency(item.price)}</p>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold">{formatCurrency(item.total)}</span>
-                          <button onClick={() => removeItem(idx)} className="text-gray-500 hover:text-red-400 ml-2">✕</button>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <span className="text-sm font-semibold text-white">{formatCurrency(item.total)}</span>
+                          <button onClick={() => removeItem(idx)} className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-400 transition-all">
+                            <X className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       </li>
                     ))}
                   </ul>
                 )}
 
+                {/* Totals + CTA */}
                 {items.length > 0 && (
-                  <div className="p-4 border-t border-gray-700">
-                    <div className="space-y-1 mb-4">
-                      <div className="flex justify-between text-sm text-gray-400">
+                  <div className="px-5 py-4 border-t border-slate-800 bg-slate-900/80">
+                    <div className="space-y-1.5 mb-4">
+                      <div className="flex justify-between text-xs text-slate-500">
                         <span>Zwischensumme</span>
                         <span>{formatCurrency(subtotal)}</span>
                       </div>
-                      <div className="flex justify-between text-sm text-gray-400">
-                        <span>MwSt. (19%)</span>
+                      <div className="flex justify-between text-xs text-slate-500">
+                        <span>MwSt. 19%</span>
                         <span>{formatCurrency(tax)}</span>
                       </div>
-                      <div className="flex justify-between font-bold text-lg pt-1 border-t border-gray-600">
-                        <span>Gesamt</span>
-                        <span className="text-blue-400">{formatCurrency(total)}</span>
+                      <div className="flex justify-between items-baseline pt-2 border-t border-slate-700/60">
+                        <span className="font-semibold text-white">Gesamt</span>
+                        <span className="text-2xl font-black text-white">{formatCurrency(total)}</span>
                       </div>
                     </div>
                     <button
                       onClick={createReceipt}
                       disabled={loading}
-                      className="w-full bg-green-600 hover:bg-green-500 disabled:opacity-60 text-white py-3 rounded-xl font-bold text-lg transition-colors"
+                      className="w-full relative overflow-hidden bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 disabled:opacity-50 text-white py-3.5 rounded-xl font-bold text-base transition-all shadow-lg shadow-blue-900/40 hover:shadow-blue-900/60 hover:scale-[1.01] active:scale-[0.99]"
                     >
-                      {loading ? "Bon wird erstellt…" : "💳 Bon ausstellen"}
+                      {loading ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Bon wird erstellt…
+                        </span>
+                      ) : (
+                        <span className="flex items-center justify-center gap-2">
+                          <Zap className="w-4 h-4" />
+                          Bon ausstellen
+                        </span>
+                      )}
                     </button>
                   </div>
                 )}
