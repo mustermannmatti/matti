@@ -26,6 +26,7 @@ export function SiteNav() {
           <Link href="/#how-it-works" className="hover:text-gray-900 transition-colors">So funktioniert es</Link>
           <Link href="/#features" className="hover:text-gray-900 transition-colors">Features</Link>
           <Link href="/pricing" className="hover:text-gray-900 transition-colors">Preise</Link>
+          <Link href="/onboarding" className="hover:text-gray-900 transition-colors">Händler starten</Link>
         </nav>
 
         {/* Desktop actions */}
@@ -62,6 +63,7 @@ export function SiteNav() {
           <Link href="/#how-it-works" className="block text-sm font-medium text-gray-700 py-2" onClick={() => setOpen(false)}>So funktioniert es</Link>
           <Link href="/#features" className="block text-sm font-medium text-gray-700 py-2" onClick={() => setOpen(false)}>Features</Link>
           <Link href="/pricing" className="block text-sm font-medium text-gray-700 py-2" onClick={() => setOpen(false)}>Preise</Link>
+          <Link href="/onboarding" className="block text-sm font-medium text-gray-700 py-2" onClick={() => setOpen(false)}>Händler starten</Link>
           <div className="border-t border-gray-100 pt-3 flex flex-col gap-2">
             <Link href="/login" className="text-sm font-medium text-gray-700 py-2" onClick={() => setOpen(false)}>Anmelden</Link>
             <Link href="/register" className="bg-blue-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl text-center" onClick={() => setOpen(false)}>Registrieren</Link>

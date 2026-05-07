@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -9,7 +9,7 @@ import { Suspense } from "react";
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/pos";
+  const callbackUrl = searchParams.get("callbackUrl") || null;
   const registered = searchParams.get("registered") === "1";
 
   const [email, setEmail] = useState("");
@@ -34,7 +34,10 @@ function LoginForm() {
       return;
     }
 
-    router.push(callbackUrl);
+    const session = await getSession();
+    const role = (session?.user as { role?: string })?.role;
+    const destination = callbackUrl ?? (role === "merchant" ? "/pos" : "/dashboard");
+    router.push(destination);
     router.refresh();
   }
 
@@ -49,7 +52,7 @@ function LoginForm() {
             </div>
             <span className="font-bold text-2xl text-gray-900">Tappr</span>
           </Link>
-          <p className="text-gray-500 mt-2 text-sm">Händler-Login</p>
+          <p className="text-gray-500 mt-2 text-sm">Anmelden</p>
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">

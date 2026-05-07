@@ -233,16 +233,13 @@ export default function POSPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (!session?.user?.id) return;
     async function load() {
-      await fetch("/api/seed", { method: "POST" });
-      const res = await fetch("/api/stores");
+      const res = await fetch(`/api/stores?userId=${session!.user!.id}`);
       const data = await res.json();
-      setStores(data);
-      if (data.length > 0) {
-        const myStore = session?.user?.id
-          ? data.find((s: Store & { userId?: string }) => s.userId === session.user?.id)
-          : null;
-        setSelectedStore(myStore ?? data[0]);
+      if (Array.isArray(data) && data.length > 0) {
+        setStores(data);
+        setSelectedStore(data[0]);
       }
     }
     load();
@@ -383,18 +380,17 @@ export default function POSPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Left: item input */}
             <div>
-              <div className="bg-gray-800 rounded-xl p-4 mb-4">
-                <label className="text-xs text-gray-400 mb-2 block">Laden</label>
-                <select
-                  value={selectedStore?.id ?? ""}
-                  onChange={(e) => setSelectedStore(stores.find((s) => s.id === e.target.value) ?? null)}
-                  className="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {stores.map((s) => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
-                  ))}
-                </select>
-              </div>
+              {selectedStore && (
+                <div className="bg-gray-800 rounded-xl p-4 mb-4 flex items-center gap-3">
+                  <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <span className="text-white text-xs font-bold">🏪</span>
+                  </div>
+                  <div>
+                    <p className="text-white text-sm font-semibold">{selectedStore.name}</p>
+                    <p className="text-gray-400 text-xs">{selectedStore.address}</p>
+                  </div>
+                </div>
+              )}
 
               <div className="bg-gray-800 rounded-xl p-4 mb-4">
                 <label className="text-xs text-gray-400 mb-2 block">Kategorie</label>
