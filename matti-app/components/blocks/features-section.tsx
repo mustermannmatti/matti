@@ -16,7 +16,7 @@ export function FeaturesSection() {
         <div className="relative z-10 grid grid-cols-6 gap-3">
 
           {/* Card 1: 100% Papierlos */}
-          <Card className="relative col-span-full flex overflow-hidden lg:col-span-2">
+          <Card className="relative col-span-full flex overflow-hidden lg:col-span-2 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-default">
             <CardContent className="relative m-auto size-fit pt-6">
               <div className="relative flex h-24 w-56 items-center">
                 <svg
@@ -38,7 +38,7 @@ export function FeaturesSection() {
           </Card>
 
           {/* Card 2: Sicher & verschlüsselt */}
-          <Card className="relative col-span-full overflow-hidden sm:col-span-3 lg:col-span-2">
+          <Card className="relative col-span-full overflow-hidden sm:col-span-3 lg:col-span-2 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-default">
             <CardContent className="pt-6">
               <div className="relative mx-auto flex aspect-square size-32 rounded-full border border-blue-100 before:absolute before:-inset-2 before:rounded-full before:border before:border-blue-50">
                 <div className="m-auto flex flex-col items-center gap-1">
@@ -55,7 +55,7 @@ export function FeaturesSection() {
           </Card>
 
           {/* Card 3: NFC & QR – per Antippen */}
-          <Card className="relative col-span-full overflow-hidden sm:col-span-3 lg:col-span-2">
+          <Card className="relative col-span-full overflow-hidden sm:col-span-3 lg:col-span-2 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-default">
             <CardContent className="pt-6">
               <div className="pt-6 lg:px-6">
                 {/* Stylized wave chart representing instant transfer */}
@@ -88,7 +88,7 @@ export function FeaturesSection() {
           </Card>
 
           {/* Card 4: Ausgaben-Analyse */}
-          <Card className="relative col-span-full overflow-hidden lg:col-span-3">
+          <Card className="relative col-span-full overflow-hidden lg:col-span-3 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-default">
             <CardContent className="grid pt-6 sm:grid-cols-2">
               <div className="relative z-10 flex flex-col justify-between space-y-12 lg:space-y-6">
                 <div className="relative flex aspect-square size-12 rounded-full border border-gray-200 before:absolute before:-inset-2 before:rounded-full before:border before:border-gray-100">
@@ -125,7 +125,7 @@ export function FeaturesSection() {
           </Card>
 
           {/* Card 5: Für Händler & Kunden */}
-          <Card className="relative col-span-full overflow-hidden lg:col-span-3">
+          <Card className="relative col-span-full overflow-hidden lg:col-span-3 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-default">
             <CardContent className="grid h-full pt-6 sm:grid-cols-2">
               <div className="relative z-10 flex flex-col justify-between space-y-12 lg:space-y-6">
                 <div className="relative flex aspect-square size-12 rounded-full border border-gray-200 before:absolute before:-inset-2 before:rounded-full before:border before:border-gray-100">
