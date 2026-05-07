@@ -59,8 +59,8 @@ function ApiKeysPanel() {
   useEffect(() => {
     setOrigin(window.location.origin);
     fetch("/api/v1/keys")
-      .then((r) => r.json())
-      .then((data) => { setKeys(data); setLoading(false); });
+      .then((r) => r.ok ? r.json() : [])
+      .then((data) => { setKeys(Array.isArray(data) ? data : []); setLoading(false); });
   }, []);
 
   async function createKey() {
