@@ -77,10 +77,10 @@ export default function HomePage() {
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
-            href="/dashboard"
+            href="/register"
             className="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-blue-50 transition-colors inline-block"
           >
-            App ausprobieren →
+            Kostenlos starten →
           </Link>
           <Link
             href="/register"

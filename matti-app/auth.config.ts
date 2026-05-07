@@ -13,11 +13,11 @@ export const authConfig: NextAuthConfig = {
       const role = (auth?.user as { role?: string })?.role;
       const isOnPOS = nextUrl.pathname.startsWith("/pos");
       const isOnDashboard = nextUrl.pathname.startsWith("/dashboard");
-
       const isOnOnboarding = nextUrl.pathname.startsWith("/onboarding");
+      const isOnScan = nextUrl.pathname.startsWith("/scan");
 
       if (!isLoggedIn) {
-        if (isOnPOS || isOnDashboard || isOnOnboarding) return false;
+        if (isOnPOS || isOnDashboard || isOnOnboarding || isOnScan) return false;
         return true;
       }
 
