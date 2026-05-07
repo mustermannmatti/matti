@@ -140,7 +140,7 @@ export function HeroSection() {
                 {/* Announcement badge */}
                 <motion.div custom={1} variants={fadeUp} initial="hidden" animate="visible" className="mb-8">
                   <Link
-                    href="/dashboard"
+                    href="/register"
                     className="group mx-auto flex w-fit items-center gap-3 rounded-full border border-blue-100 bg-white px-4 py-1.5 shadow-sm shadow-blue-100 transition-all hover:shadow-md hover:border-blue-300"
                   >
                     <span className="text-sm text-gray-600">
