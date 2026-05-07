@@ -4,6 +4,7 @@ import {
   type ElementType,
   type RefObject,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -66,7 +67,9 @@ export function TimelineContent({
 
   const variants = customVariants ?? defaultVariants;
 
-  const MotionTag = motion.create(Tag as ElementType);
+  // Must be memoized — motion.create() returns a new component on every call.
+  // Without this, React unmounts/remounts the element each render, resetting isVisible.
+  const MotionTag = useMemo(() => motion.create(Tag as ElementType), [Tag]);
 
   return (
     <MotionTag

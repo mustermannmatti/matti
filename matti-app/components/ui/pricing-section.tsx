@@ -6,7 +6,7 @@ import NumberFlow from "@number-flow/react";
 import { CheckCheck, Receipt, BarChart2, Smartphone, Store, Headphones, ShieldCheck, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useRef, useState, useMemo } from "react";
 
 const plans = [
   {
@@ -136,7 +136,7 @@ export default function PricingSection() {
   const [isYearly, setIsYearly] = useState(false);
   const pricingRef = useRef<HTMLDivElement>(null);
 
-  const revealVariants = {
+  const revealVariants = useMemo(() => ({
     visible: (i: number) => ({
       y: 0,
       opacity: 1,
@@ -144,7 +144,7 @@ export default function PricingSection() {
       transition: { delay: i * 0.15, duration: 0.55, ease: [0.22, 1, 0.36, 1] },
     }),
     hidden: { filter: "blur(10px)", y: -16, opacity: 0 },
-  };
+  }), []);
 
   return (
     <div className="px-4 pt-16 pb-24 min-h-screen mx-auto relative bg-gray-50" ref={pricingRef}>
