@@ -68,6 +68,24 @@ export async function GET(request: Request) {
     isPaying: u.subscriptions.length > 0,
   }));
 
+  // Build monthly revenue chart: last 12 months, cumulative active subs per month
+  const allSubs = await db.subscription.findMany({
+    where: { status: "active" },
+    include: { user: { select: { plan: true } } },
+    orderBy: { createdAt: "asc" },
+  });
+
+  const now = new Date();
+  const revenueChart = Array.from({ length: 12 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (11 - i), 1);
+    const label = d.toLocaleDateString("de-DE", { month: "short", year: "2-digit" });
+    const endOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
+    const activeThen = allSubs.filter((s) => new Date(s.createdAt) <= endOfMonth);
+    const revenue = activeThen.reduce((sum, s) => sum + (PLAN_MONTHLY[s.user.plan] ?? 0), 0);
+    const count = activeThen.length;
+    return { month: label, umsatz: revenue, abonnenten: count };
+  });
+
   return NextResponse.json({
     overview: {
       totalUsers: users.length,
@@ -79,5 +97,6 @@ export async function GET(request: Request) {
     payingUsers,
     merchantStats,
     consumerList,
+    revenueChart,
   });
 }

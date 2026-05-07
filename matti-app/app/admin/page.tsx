@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 type Overview = {
   totalUsers: number;
@@ -67,6 +68,7 @@ export default function AdminPage() {
   const [payingUsers, setPayingUsers] = useState<PayingUser[]>([]);
   const [merchants, setMerchants] = useState<MerchantStat[]>([]);
   const [consumers, setConsumers] = useState<ConsumerItem[]>([]);
+  const [revenueChart, setRevenueChart] = useState<{ month: string; umsatz: number; abonnenten: number }[]>([]);
   const [tab, setTab] = useState<"overview" | "paying" | "merchants" | "users" | "payments">("overview");
 
   type PaymentSetting = { key: string; value: string; set: boolean };
@@ -93,6 +95,7 @@ export default function AdminPage() {
     setPayingUsers(stats.payingUsers ?? []);
     setMerchants(stats.merchantStats ?? []);
     setConsumers(stats.consumerList ?? []);
+    setRevenueChart(stats.revenueChart ?? []);
     if (psRes.ok) setPaymentSettings(await psRes.json());
     setAuthed(true);
     setLoading(false);
@@ -230,6 +233,47 @@ export default function AdminPage() {
         </div>
 
         {tab === "overview" && (
+          <div className="space-y-6">
+          {/* Revenue Chart */}
+          <div className="bg-gray-800 rounded-2xl border border-gray-700 p-5">
+            <h2 className="font-semibold mb-1">Umsatzentwicklung</h2>
+            <p className="text-xs text-gray-400 mb-5">Monatlich wiederkehrender Umsatz – letzte 12 Monate</p>
+            <ResponsiveContainer width="100%" height={260}>
+              <AreaChart data={revenueChart} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorUmsatz" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="month" tick={{ fill: "#9ca3af", fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis
+                  tick={{ fill: "#9ca3af", fontSize: 12 }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(v) => `${v} €`}
+                  width={56}
+                />
+                <Tooltip
+                  contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 12 }}
+                  labelStyle={{ color: "#f9fafb", fontWeight: 600 }}
+                  itemStyle={{ color: "#93c5fd" }}
+                  formatter={(value) => [`${Number(value).toFixed(2)} €`, "Umsatz"] as [string, string]}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="umsatz"
+                  stroke="#3b82f6"
+                  strokeWidth={2}
+                  fill="url(#colorUmsatz)"
+                  dot={{ fill: "#3b82f6", r: 3 }}
+                  activeDot={{ r: 5 }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
               <div className="p-4 border-b border-gray-700">
@@ -293,6 +337,7 @@ export default function AdminPage() {
                 </div>
               </div>
             </div>
+          </div>
           </div>
         )}
 
