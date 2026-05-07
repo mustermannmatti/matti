@@ -80,10 +80,10 @@ export default function HomePage() {
             href="/register"
             className="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-blue-50 transition-colors inline-block"
           >
-            Kostenlos starten →
+            Jetzt registrieren →
           </Link>
           <Link
-            href="/register"
+            href="/register?role=merchant"
             className="bg-blue-500 border border-blue-400 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-blue-400 transition-colors inline-block"
           >
             Als Händler registrieren

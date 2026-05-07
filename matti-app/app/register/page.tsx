@@ -1,12 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { Suspense } from "react";
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [role, setRole] = useState<"consumer" | "merchant">("consumer");
+
+  useEffect(() => {
+    if (searchParams.get("role") === "merchant") setRole("merchant");
+  }, [searchParams]);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -248,5 +254,13 @@ export default function RegisterPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense>
+      <RegisterForm />
+    </Suspense>
   );
 }
