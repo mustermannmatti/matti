@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { TimelineContent } from "@/components/ui/timeline-animation";
 import NumberFlow from "@number-flow/react";
 import { CheckCheck, Receipt, BarChart2, Smartphone, Store, Headphones, ShieldCheck, Zap } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRef, useState } from "react";
 
@@ -91,13 +91,16 @@ const PricingSwitch = ({ onSwitch }: { onSwitch: (value: string) => void }) => {
             selected === "0" ? "text-white" : "text-gray-500 hover:text-gray-800"
           }`}
         >
-          {selected === "0" && (
-            <motion.span
-              layoutId="switch-tappr"
-              className="absolute top-0 left-0 sm:h-11 h-9 w-full rounded-full border-4 shadow-sm shadow-blue-600 border-blue-600 bg-gradient-to-t from-blue-600 via-blue-500 to-blue-400"
-              transition={{ type: "spring", stiffness: 500, damping: 30 }}
-            />
-          )}
+          <AnimatePresence>
+            {selected === "0" && (
+              <motion.span
+                key="pill-monthly"
+                layoutId="switch-tappr"
+                className="absolute top-0 left-0 sm:h-11 h-9 w-full rounded-full shadow-sm shadow-blue-400 bg-gradient-to-t from-blue-600 via-blue-500 to-blue-400"
+                transition={{ type: "spring", stiffness: 400, damping: 28 }}
+              />
+            )}
+          </AnimatePresence>
           <span className="relative">Monatlich</span>
         </button>
 
@@ -107,13 +110,16 @@ const PricingSwitch = ({ onSwitch }: { onSwitch: (value: string) => void }) => {
             selected === "1" ? "text-white" : "text-gray-500 hover:text-gray-800"
           }`}
         >
-          {selected === "1" && (
-            <motion.span
-              layoutId="switch-tappr"
-              className="absolute top-0 left-0 sm:h-11 h-9 w-full rounded-full border-4 shadow-sm shadow-blue-600 border-blue-600 bg-gradient-to-t from-blue-600 via-blue-500 to-blue-400"
-              transition={{ type: "spring", stiffness: 500, damping: 30 }}
-            />
-          )}
+          <AnimatePresence>
+            {selected === "1" && (
+              <motion.span
+                key="pill-yearly"
+                layoutId="switch-tappr"
+                className="absolute top-0 left-0 sm:h-11 h-9 w-full rounded-full shadow-sm shadow-blue-400 bg-gradient-to-t from-blue-600 via-blue-500 to-blue-400"
+                transition={{ type: "spring", stiffness: 400, damping: 28 }}
+              />
+            )}
+          </AnimatePresence>
           <span className="relative flex items-center gap-2">
             Jährlich
             <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
@@ -233,18 +239,18 @@ export default function PricingSection() {
                 <h3 className="text-2xl font-bold text-gray-900 mb-1">{plan.name}</h3>
                 <p className="text-sm text-gray-500 mb-5 leading-relaxed">{plan.description}</p>
 
-                <div className="flex items-baseline gap-1">
+                <div className="flex items-baseline gap-1 min-h-[2.75rem]">
                   {plan.price === 0 ? (
                     <span className="text-4xl font-bold text-gray-900">Kostenlos</span>
                   ) : (
                     <>
-                      <span className="text-4xl font-bold text-gray-900">
-                        <NumberFlow
-                          value={isYearly ? plan.yearlyPrice : plan.price}
-                          format={{ style: "currency", currency: "EUR", minimumFractionDigits: 2 }}
-                          className="text-4xl font-bold"
-                        />
-                      </span>
+                      <NumberFlow
+                        value={isYearly ? plan.yearlyPrice : plan.price}
+                        format={{ style: "currency", currency: "EUR", minimumFractionDigits: 2 }}
+                        className="text-4xl font-bold text-gray-900"
+                        spinTiming={{ duration: 500, easing: "ease-out" }}
+                        opacityTiming={{ duration: 300, easing: "ease-out" }}
+                      />
                       <span className="text-gray-500 text-sm ml-1">
                         /{isYearly ? "Jahr" : "Monat"}
                       </span>
@@ -252,9 +258,14 @@ export default function PricingSection() {
                   )}
                 </div>
                 {isYearly && plan.price > 0 && (
-                  <p className="text-xs text-green-600 font-medium mt-1">
+                  <motion.p
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    className="text-xs text-green-600 font-medium mt-1"
+                  >
                     Du sparst {((plan.price * 12) - plan.yearlyPrice).toFixed(0)} € im Jahr
-                  </p>
+                  </motion.p>
                 )}
               </CardHeader>
 
