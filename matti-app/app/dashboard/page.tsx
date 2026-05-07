@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { formatCurrency, formatDate, categoryColor } from "@/lib/utils";
+import FloatingActionMenu from "@/components/ui/floating-action-menu";
+import { QrCode, Store, Receipt } from "lucide-react";
 
 type Receipt = {
   id: string;
@@ -21,12 +24,31 @@ type Receipt = {
 type User = { id: string; name: string; email: string };
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("Alle");
   const [seeded, setSeeded] = useState(false);
+
+  const fabOptions = [
+    {
+      label: "QR-Code scannen",
+      Icon: <QrCode className="w-4 h-4" />,
+      onClick: () => router.push("/scan"),
+    },
+    {
+      label: "Händler-Terminal",
+      Icon: <Store className="w-4 h-4" />,
+      onClick: () => router.push("/pos"),
+    },
+    {
+      label: "Alle Kassenbons",
+      Icon: <Receipt className="w-4 h-4" />,
+      onClick: () => document.getElementById("receipts-section")?.scrollIntoView({ behavior: "smooth" }),
+    },
+  ];
 
   useEffect(() => {
     async function init() {
@@ -179,7 +201,7 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Receipts list */}
-          <div className="md:col-span-2">
+          <div id="receipts-section" className="md:col-span-2">
             <div className="bg-white rounded-xl border border-gray-200">
               <div className="p-4 border-b border-gray-100">
                 <h2 className="font-semibold text-gray-900 mb-3">Kassenbons</h2>
@@ -290,6 +312,8 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      <FloatingActionMenu options={fabOptions} />
     </div>
   );
 }
