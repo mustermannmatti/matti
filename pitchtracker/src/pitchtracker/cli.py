@@ -69,7 +69,10 @@ def cmd_analyze(args: argparse.Namespace) -> int:
         annotator.close()
 
     report_path = out_dir / "report.html"
-    report_path.write_text(render_html_report(analysis, title=Path(args.video).stem))
+    # encoding explicitly: Windows would otherwise write cp1252 and choke on emoji
+    report_path.write_text(
+        render_html_report(analysis, title=Path(args.video).stem), encoding="utf-8"
+    )
     print(f"{len(analysis.players)} Spieler getrackt über {analysis.frames_analyzed} Frames.")
     print(f"Report: {report_path}")
     if annotator is not None:
@@ -98,7 +101,9 @@ def cmd_demo(args: argparse.Namespace) -> int:
     write_video(match, str(out_dir / "raw.mp4"))
 
     report_path = out_dir / "report.html"
-    report_path.write_text(render_html_report(analysis, title="Demo-Spiel (synthetisch)"))
+    report_path.write_text(
+        render_html_report(analysis, title="Demo-Spiel (synthetisch)"), encoding="utf-8"
+    )
     print(f"Demo fertig: {len(analysis.players)} Spieler getrackt.")
     print(f"Report: {report_path}")
     print(f"Videos: {out_dir / 'raw.mp4'} (Eingabe), {out_dir / 'annotated.mp4'} (getrackt)")

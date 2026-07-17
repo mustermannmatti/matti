@@ -57,5 +57,5 @@ def test_report_renders(analysis_and_match, tmp_path):
     assert "Spielerstatistiken" in html
     assert "data:image/png;base64," in html
     out = tmp_path / "report.html"
-    out.write_text(html)
+    out.write_text(html, encoding="utf-8")
     assert out.stat().st_size > 10_000
