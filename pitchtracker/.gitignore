@@ -1,0 +1,8 @@
+__pycache__/
+*.egg-info/
+.pytest_cache/
+build/
+dist/
+*.pt
+pitchtracker-out/
+pitchtracker-demo/

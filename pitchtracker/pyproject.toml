@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pitchtracker"
+version = "0.1.0"
+description = "Spieler-Tracking und Statistiken aus Amateur-Sportvideos (Veo & Co.)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "numpy>=1.26",
+    "opencv-python-headless>=4.9",
+]
+
+[project.optional-dependencies]
+yolo = ["ultralytics>=8.2"]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+pitchtracker = "pitchtracker.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
