@@ -56,6 +56,10 @@ def _chain(*hooks):
 
 
 def cmd_frame(args: argparse.Namespace) -> int:
+    import base64
+
+    from .calibrate import render_calibration_html
+
     cap = cv2.VideoCapture(args.video)
     if not cap.isOpened():
         print(f"Video nicht lesbar: {args.video}", file=sys.stderr)
@@ -67,9 +71,19 @@ def cmd_frame(args: argparse.Namespace) -> int:
         print("Frame konnte nicht gelesen werden.", file=sys.stderr)
         return 1
     cv2.imwrite(args.output, frame)
+
+    ok, buf = cv2.imencode(".png", frame)
+    html_path = Path(args.output).with_suffix(".html")
+    html_path.write_text(
+        render_calibration_html(
+            base64.b64encode(buf.tobytes()).decode("ascii"), Path(args.video).name
+        ),
+        encoding="utf-8",
+    )
     print(f"Frame gespeichert: {args.output}")
-    print("Öffne das Bild und notiere die Pixelkoordinaten der 4 Platz-Ecken")
-    print("(Reihenfolge: oben-links, oben-rechts, unten-rechts, unten-links).")
+    print(f"Kalibrier-Tool:   {html_path}")
+    print(f"→ Öffne {html_path} im Browser, klicke die 4 Platz-Ecken an")
+    print("  und kopiere den fertigen Befehl.")
     return 0
 
 
