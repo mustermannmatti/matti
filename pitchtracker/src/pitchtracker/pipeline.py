@@ -17,14 +17,16 @@ MIN_TRACK_SECONDS = 3.0  # discard flickering short tracks
 
 
 def iter_video_frames(
-    video_path: str, stride: int = 1, max_frames: int | None = None
+    video_path: str, stride: int = 1, max_frames: int | None = None, start_frame: int = 0
 ) -> Iterator[tuple[int, np.ndarray]]:
-    """Yield (frame_index, frame_bgr) every `stride` frames."""
+    """Yield (frame_index, frame_bgr) every `stride` frames, starting at start_frame."""
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         raise FileNotFoundError(f"Video nicht lesbar: {video_path}")
     try:
-        index = 0
+        if start_frame > 0:
+            cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
+        index = start_frame
         yielded = 0
         while True:
             ok, frame = cap.read()
@@ -47,6 +49,15 @@ def video_fps(video_path: str) -> float:
     finally:
         cap.release()
     return fps if fps and fps > 0 else 25.0
+
+
+def video_frame_count(video_path: str) -> int:
+    cap = cv2.VideoCapture(video_path)
+    try:
+        count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    finally:
+        cap.release()
+    return max(0, count)
 
 
 def analyze_frames(
@@ -111,10 +122,13 @@ def analyze_video(
     calibration: PitchCalibration,
     stride: int = 2,
     max_frames: int | None = None,
+    start_frame: int = 0,
     on_frame: Callable[[int, np.ndarray, list[tuple[int, object]]], None] | None = None,
 ) -> MatchAnalysis:
     fps = video_fps(video_path)
-    frames = iter_video_frames(video_path, stride=stride, max_frames=max_frames)
+    frames = iter_video_frames(
+        video_path, stride=stride, max_frames=max_frames, start_frame=start_frame
+    )
     return analyze_frames(
         frames, detector, calibration, fps, stride=stride, video_path=video_path, on_frame=on_frame
     )

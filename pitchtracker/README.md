@@ -76,6 +76,58 @@ pitchtracker analyze spiel.mp4 \
 
 Ergebnis: `analyse/report.html` mit Statistik-Tabelle und Heatmaps.
 
+## YouTube-Video als Quelle
+
+Eigene Spielaufnahmen, die auf YouTube liegen, lassen sich mit
+[yt-dlp](https://github.com/yt-dlp/yt-dlp) herunterladen (nur für Videos,
+an denen man die Rechte hat — z.B. die Uploads des eigenen Vereins):
+
+```bash
+python -m pip install yt-dlp
+python -m yt_dlp -f "mp4" -o spiel.mp4 "https://www.youtube.com/watch?v=..."
+```
+
+Danach ganz normal `pitchtracker analyze spiel.mp4 …`.
+
+**Empfohlene Einstellungen für eine ganze Halbzeit (40–45 min):**
+
+```bash
+python -m pitchtracker analyze spiel.mp4 \
+  --corners "..." --pitch 105x68 \
+  --stride 5 --model yolov8n.pt \
+  --start-seconds 60 \
+  --out halbzeit1
+```
+
+- `--stride 5` analysiert 5 Bilder/s statt 25 — für Laufdistanzen und
+  Heatmaps völlig ausreichend und 5× schneller
+- `--model yolov8n.pt` ist das schnellste Modell
+- **ohne** `--annotate` (ein 45-min-Video zusätzlich zu schreiben kostet
+  massiv Zeit und Speicher — erst auf kurzen Ausschnitten prüfen, ob das
+  Tracking sitzt)
+- vorher mit `--max-seconds 120` einen Probelauf machen
+- Fortschritt + Restzeit werden während der Analyse angezeigt
+- Faustregel Laufzeit auf einem normalen Laptop ohne Grafikkarte:
+  ungefähr 1–3× die Videolänge; mit NVIDIA-GPU (CUDA-PyTorch) ein Bruchteil
+
+## Bewegte Kamera (Veo-Follow-Modus, Schwenks)
+
+Die Kalibrierung (4 Ecken) gilt für **eine feste Kameraeinstellung**. Was
+viele nicht wissen: Veo & Co. filmen physisch **das ganze Feld statisch im
+Panorama** — der „Kameraschwenk", der dem Ball folgt, ist nur ein virtueller
+Ausschnitt, der nachträglich berechnet wird. Für die Analyse deshalb immer
+den **Panorama-/Weitwinkel-Export** verwenden: Dort sind alle Spieler
+jederzeit im Bild.
+
+Beim Follow-Export (oder einem von Hand geschwenkten Video) gilt:
+Spieler außerhalb des Bildausschnitts kann keine Software tracken — die
+Information existiert schlicht nicht. Möglich ist dann nur eine Analyse
+der jeweils sichtbaren Spieler mit laufend neu berechneter Kalibrierung
+(automatische Platzlinien-Erkennung pro Frame — auf der Roadmap für v0.2).
+Bis dahin: Panorama-Export nutzen, oder als Low-Budget-Alternative ein
+zweites Gerät (Handy auf Stativ, erhöht, Weitwinkel) statisch aufs ganze
+Feld richten — Veo liefert die schönen Bilder, das statische Video die Daten.
+
 ## Wichtige Einschränkungen (ehrlich)
 
 - **Kamerafahrten:** Die Kalibrierung gilt pro Kameraeinstellung. Veo-Systeme

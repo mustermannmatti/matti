@@ -8,14 +8,51 @@ from __future__ import annotations
 
 import argparse
 import sys
+import time
 from pathlib import Path
 
 import cv2
 
 from .annotate import VideoAnnotator
-from .pipeline import analyze_frames, analyze_video
+from .pipeline import analyze_frames, analyze_video, video_fps, video_frame_count
 from .pitch import PitchCalibration, parse_corners
 from .report import render_html_report
+
+
+class _Progress:
+    """Prints progress + ETA every `every` analyzed frames — essential for full halves."""
+
+    def __init__(self, total: int | None, every: int = 100):
+        self.total = total
+        self.every = every
+        self.count = 0
+        self.t0 = time.time()
+
+    def __call__(self, frame_index, frame, matches) -> None:
+        self.count += 1
+        if self.count % self.every:
+            return
+        rate = self.count / max(1e-6, time.time() - self.t0)
+        if self.total:
+            pct = 100.0 * self.count / self.total
+            eta_min = (self.total - self.count) / max(1e-6, rate) / 60
+            print(
+                f"  {self.count}/{self.total} Frames ({pct:.0f} %) – "
+                f"{len(matches)} Spieler im Bild – Rest ca. {eta_min:.0f} min",
+                flush=True,
+            )
+        else:
+            print(f"  {self.count} Frames analysiert ({rate:.1f}/s)", flush=True)
+
+
+def _chain(*hooks):
+    hooks = [h for h in hooks if h is not None]
+
+    def on_frame(frame_index, frame, matches):
+        for h in hooks:
+            h(frame_index, frame, matches)
+
+    return on_frame
 
 
 def cmd_frame(args: argparse.Namespace) -> int:
@@ -46,24 +83,23 @@ def cmd_analyze(args: argparse.Namespace) -> int:
     calibration = PitchCalibration(corners, length_m, width_m)
     detector = YoloDetector(model_name=args.model, confidence=args.confidence)
 
+    fps = video_fps(args.video)
+    start_frame = int(args.start_seconds * fps)
     annotator = None
     if args.annotate:
-        from .pipeline import video_fps
+        annotator = VideoAnnotator(str(out_dir / "annotated.mp4"), fps / args.stride)
 
-        annotator = VideoAnnotator(
-            str(out_dir / "annotated.mp4"), video_fps(args.video) / args.stride
-        )
-
+    total_available = max(0, (video_frame_count(args.video) - start_frame)) // args.stride
     max_frames = None
     if args.max_seconds is not None:
-        from .pipeline import video_fps
+        max_frames = int(args.max_seconds * fps / args.stride)
+    total = min(total_available, max_frames) if max_frames else total_available
 
-        max_frames = int(args.max_seconds * video_fps(args.video) / args.stride)
-
-    print(f"Analysiere {args.video} … (Stride {args.stride})")
+    print(f"Analysiere {args.video} … (Stride {args.stride}, ab Sekunde {args.start_seconds:.0f})")
     analysis = analyze_video(
         args.video, detector, calibration,
-        stride=args.stride, max_frames=max_frames, on_frame=annotator,
+        stride=args.stride, max_frames=max_frames, start_frame=start_frame,
+        on_frame=_chain(annotator, _Progress(total or None)),
     )
     if annotator is not None:
         annotator.close()
@@ -134,6 +170,10 @@ def main(argv: list[str] | None = None) -> int:
     p_an.add_argument("--confidence", type=float, default=0.3)
     p_an.add_argument("--stride", type=int, default=2, help="jeden n-ten Frame analysieren")
     p_an.add_argument("--max-seconds", type=float, default=None, help="nur die ersten N Sekunden")
+    p_an.add_argument(
+        "--start-seconds", type=float, default=0.0,
+        help="Analyse erst ab diesem Zeitpunkt starten (z.B. Anpfiff überspringen)",
+    )
     p_an.add_argument("--annotate", action="store_true", help="annotiertes Video schreiben")
     p_an.add_argument("--out", default="pitchtracker-out")
     p_an.set_defaults(func=cmd_analyze)
